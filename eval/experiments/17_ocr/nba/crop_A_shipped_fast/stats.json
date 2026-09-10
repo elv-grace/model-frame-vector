@@ -1,0 +1,10 @@
+{
+ "mode": "crop",
+ "run": "eval/experiments/11_titles/nba/A_shipped_fast",
+ "crops": 6000,
+ "of_total": 8843,
+ "regions": 5209,
+ "seconds": 98.8,
+ "per_crop_ms": 16.47,
+ "mag_ratio": 1.0
+}

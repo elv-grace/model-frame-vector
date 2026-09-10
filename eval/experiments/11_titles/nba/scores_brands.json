@@ -1,0 +1,210 @@
+{
+ "A_shipped_fast": {
+  "crops": 8843,
+  "assigned": 535,
+  "brands": {
+   "State Farm": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "NBC": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Peacock": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "NBA": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Kia": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Nike": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Tissot": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Gatorade": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "AT&T": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Michelob Ultra": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "DraftKings": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "American Express": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "CeraVe": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Amazon Prime": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Olympics": {
+    "crops": 1,
+    "best": 0.19343140721321106,
+    "found": true,
+    "top": []
+   }
+  },
+  "controls": {
+   "Lufthansa": 0,
+   "Banco Santander": 0,
+   "Carlsberg": 0,
+   "Renault": 0,
+   "Aeroflot": 0,
+   "Danone": 0
+  }
+ },
+ "B2_step1_conf07": {
+  "crops": 57914,
+  "assigned": 11136,
+  "brands": {
+   "State Farm": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "NBC": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Peacock": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "NBA": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Kia": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Nike": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Tissot": {
+    "crops": 27,
+    "best": 0.31217217445373535,
+    "found": true,
+    "top": []
+   },
+   "Gatorade": {
+    "crops": 5,
+    "best": 0.80935138463974,
+    "found": true,
+    "top": []
+   },
+   "AT&T": {
+    "crops": 1,
+    "best": 0.10005898028612137,
+    "found": true,
+    "top": []
+   },
+   "Michelob Ultra": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "DraftKings": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "American Express": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "CeraVe": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Amazon Prime": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Olympics": {
+    "crops": 14,
+    "best": 0.9245241284370422,
+    "found": true,
+    "top": []
+   }
+  },
+  "controls": {
+   "Lufthansa": 1,
+   "Banco Santander": 0,
+   "Carlsberg": 0,
+   "Renault": 0,
+   "Aeroflot": 1,
+   "Danone": 0
+  }
+ }
+}

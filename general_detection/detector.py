@@ -3,33 +3,24 @@
 Three backends, two roles
 -------------------------
     brand   open-vocabulary, one of two:
-              "fast"      YOLOE-26 at imgsz 1280. Box AP 0.133, coverage 0.25, 98 ms/frame.
-              "coverage"  Grounding DINO at its native 800. AP 0.205, coverage 0.61, 293 ms.
+              "coverage"  Grounding DINO at its native 800, conf 0.07. THE DEFAULT.
+              "fast"      YOLOE-26 at imgsz 1280. A third of the cost, a quarter of the marks.
     person  YOLO11, closed COCO-80. AP 0.752, mean IoU 0.89, 53 ms/frame -- the best and the
             cheapest model measured for this class.
 
-The two brand options are NOT fast-versus-accurate. At their shipping operating points their
-held-out F1 is 0.267 against 0.286, seven percent apart. What separates them is COVERAGE: 0.25
-against 0.61, meaning Grounding DINO finds roughly 2.4x as many DISTINCT marks. Since a mark
-that is never cropped can never be retrieved, that is the axis that matters for a crop-and-embed
-index -- hence the name of the mode.
+Measured end to end through this module on box ground truth (eval/experiments/10_config_ab).
+
+    config                                  coverage   usable   boxes/frame
+    "fast"   yoloe26 @1280, conf 0.007         0.219    0.125           3.5
+    "coverage" gdino @800, conf 0.07           0.469    0.469          21.4
+
+`usable` is coverage's honest sibling: a box that contains the mark AND is no more than 4x its
+area, i.e. a crop whose vector is actually about the mark.
 
 Why resolution is per-backend and not a global knob
 ---------------------------------------------------
-Measured, and the field splits (eval/experiments/06_resolution):
-
-    YOLOE-26 gains from resolution -- brand AP 0.062 -> 0.133 from 640 to 1280, and the gain
-    lands in exactly the mark-size bands the theory predicts.
-
-    Grounding DINO CANNOT be scaled. Above its native 800 it collapses to AP 0.001, taking
-    person down with it (0.627 -> 0.021). Verified not to be a harness bug: imgsz 800 reproduces
-    the stock default byte-identically and batch size changes nothing, while detections fall
-    2589 -> 240 and median normalised box width inflates 0.038 -> 0.623. A count collapse that
-    large is the model, not the box arithmetic.
-
-    YOLO11 is BEST at 640 and degrades at 1280 (person AP 0.752 -> 0.702).
-
-So one global imgsz would be wrong for at least one detector whatever value it took.
+Measured, and the field splits (eval/experiments/06_resolution), 
+so one global imgsz would be wrong for at least one detector whatever value it took.
 
 Scores are not comparable across backends either -- YOLOE's text-similarity scores, YOLO11's
 sigmoid class scores and Grounding DINO's query scores have different scales -- so each backend
@@ -86,8 +77,8 @@ BRAND_BACKENDS: Dict[str, Dict] = {
         "weights": "IDEA-Research/grounding-dino-base",
         # Native resolution. Raising it does not trade speed for accuracy, it breaks the model.
         "imgsz": 800,
-        # Held-out threshold, range 0.142-0.162 across folds.
-        "conf": 0.15,
+        # Use 0.05 for a one-off archival pass, with the cap raised to match.
+        "conf": 0.07, # previously 0.15 to maximize F1, but coverage is more important than precision for embedding
     },
 }
 
@@ -144,13 +135,80 @@ class BaseDetector:
     def _raw(self, img: np.ndarray, cfg: RuntimeConfig) -> sv.Detections:
         raise NotImplementedError
 
+    @staticmethod
+    def _tiles(width: int, height: int, spec: str, overlap: float):
+        """Tile rectangles covering the frame, each overlapping its neighbours by `overlap`.
+
+        Overlap is what stops a mark straddling a seam from being halved in both tiles; without
+        it a seam is a blind spot as wide as the mark.
+        """
+        cols, rows = (int(v) for v in spec.lower().split("x"))
+        if cols <= 1 and rows <= 1:
+            return []
+        step_x, step_y = width / cols, height / rows
+        pad_x, pad_y = step_x * overlap, step_y * overlap
+        out = []
+        for row in range(rows):
+            for col in range(cols):
+                x1 = max(0, int(round(col * step_x - pad_x)))
+                y1 = max(0, int(round(row * step_y - pad_y)))
+                x2 = min(width, int(round((col + 1) * step_x + pad_x)))
+                y2 = min(height, int(round((row + 1) * step_y + pad_y)))
+                if x2 > x1 and y2 > y1:
+                    out.append((x1, y1, x2, y2))
+        return out
+
+    def _raw_tiled(self, img: np.ndarray, cfg: RuntimeConfig) -> sv.Detections:
+        """Full-frame pass plus one pass per tile, merged into frame coordinates.
+
+        Brand is a small-object problem -- two thirds of ground-truth marks are under 32 px --
+        and resolution is the obvious lever that is NOT available here: Grounding DINO collapses
+        past its native 800 (experiment 06), because a DETR decoder's learned reference points
+        are tuned to the training resolution. Slicing buys the same thing without touching imgsz.
+        A 1920x1080 frame is downscaled to 800 on the shortest edge, 0.74x, so a 22 px mark
+        arrives as 16 px; a 960-wide tile is UPscaled to 800, and the same mark arrives near
+        27 px, with the model still at exactly the resolution it was trained for.
+
+        The full-frame pass is kept rather than replaced, and that is not belt-and-braces: a mark
+        wider than a tile is cut by every tile touching it, and courtside hoardings are exactly
+        that shape. Measured on box ground truth (eval/experiments/13_sliced), usable coverage
+        by tiling, where `usable` counts a mark only if some box contains it and is no more than
+        4x its area:
+
+            tiling        coverage   usable   boxes/frame   passes/frame
+            1x1 (off)        0.479    0.474          21.8              1
+            2x2              0.599    0.589          42.9              5
+            3x2              0.604    0.552          46.2              7
+            4x3              0.589    0.495          56.4             13
+
+        Finer is not better, and the aspect bands say why: the 3-5 aspect band goes 0.42 -> 0.68
+        -> 0.63 -> 0.37 as tiles shrink, because a 669 px hoarding spans two 480 px tiles and
+        every tile sees a fragment. 2x2 is where small-mark recall has arrived and wide marks
+        have not yet been cut up. Coverage keeps creeping up past it; `usable` does not.
+        """
+        detections = [self._raw(img, cfg)]
+        height, width = img.shape[:2]
+        for (x1, y1, x2, y2) in self._tiles(width, height, cfg.brand_tiles, cfg.tile_overlap):
+            tile = np.ascontiguousarray(img[y1:y2, x1:x2])
+            dets = self._raw(tile, cfg)
+            if dets is None or len(dets) == 0:
+                continue
+            # Tile-local pixels back into frame pixels, so everything downstream -- gate,
+            # suppression, the crop taken from the ORIGINAL frame -- is unchanged.
+            dets.xyxy = dets.xyxy + np.array([x1, y1, x1, y1], dtype=dets.xyxy.dtype)
+            detections.append(dets)
+        detections = [d for d in detections if d is not None and len(d) > 0]
+        if not detections:
+            return sv.Detections.empty()
+        return detections[0] if len(detections) == 1 else sv.Detections.merge(detections)
+
     def detect(self, img: np.ndarray, cfg: RuntimeConfig) -> List[Detection]:
         """img: (H, W, 3) uint8 RGB."""
         if not self._prompts:
             raise RuntimeError("set_prompts() must be called before detect()")
 
         height, width = img.shape[:2]
-        dets = self._raw(img, cfg)
+        dets = self._raw_tiled(img, cfg)
         if dets is None or len(dets) == 0:
             return []
 

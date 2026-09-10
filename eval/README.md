@@ -33,10 +33,12 @@ for the 42 runs behind that decision.
 
 ## The schema
 
-Seven prompts, in `tools/schema_brand_person.py`:
+Five prompts. The schema in `tools/schema_brand_person.py` is the six-term version the
+experiments were run with; `emblem` and `label` were dropped from the shipping default in
+`10_config_ab` after measuring their marginal coverage at +0.000:
 
 ```
-brand   logo, letter logo, car logo, emblem, brand, label   (the MARK, never the object)
+brand   logo, letter logo, brand, car logo   (the MARK, never the object)
 person  person
 ```
 
@@ -53,12 +55,20 @@ Each exists because the previous one produced a result that changed the question
 | `01_general_8class` | 8 generic classes, 29 prompts | prompts mined from the model's own vocabulary took logo F1 from ~0 to 0.80 |
 | `02_brand_person_101` | first reframing: 5 tiers, 101 prompts, plus 42 image-prompt runs | the metric saturated; image prompting is degenerate for brand and redundant for person |
 | `03_prompt_ablation` | bare words, 6 mark terms, 6 marks + 5 surfaces | object nouns overshadow marks (1% vs 100% mark-like); surfaces overshadow them one level up |
-| `04_brand_person_mark` | **current** — 7 prompts, brand = the mark | owlv2 and gdino are the only backends that find marks (box AP 0.310 / 0.166 vs 0.062 next) |
+| `04_brand_person_mark` | 7 prompts, brand = the mark | owlv2 and gdino are the only backends that find marks (box AP 0.310 / 0.166 vs 0.062 next) |
 | `05_symbol_ablation` | `symbol` as a 7th brand term, and alone | rejected: costs the leader (0.310 → 0.284), gains nothing |
 | `06_resolution` | input size 640/960/1280 and 800/1100/1400 | a lever for the ultralytics models only (yoloe26 brand AP 0.062 → 0.133); the DETR-family detectors collapse off their native resolution |
 | `07_gdino_tiny` | Swin-T instead of Swin-B for the `coverage` backend | declined: 92% of the coverage but only 21% faster — the shared BERT encoder and DETR decoder cap the saving |
 | `08_embedders` | **Phase B** — siglip2-base-naflex (768-d) vs siglip2-large-384 (1024-d) | quality is a tie (r@1 0.926 vs 0.929); base-naflex is 6.1x cheaper per crop, so it wins on cost |
 | `09_min_crop` | retrieval vs crop pixel size, against the mark-size distribution | `min_crop_pixels` 32 → **16**: the trade turns over there, and 32 was discarding two thirds of all marks to buy precision already in reach |
+| `10_config_ab` | what a CONFIG delivers, end to end through the tagger, at its own operating point | the shipped coverage figures were ungated and described no runnable config; gdino's gate 0.15 → 0.07 takes usable coverage 0.125 → 0.469. Shipped as the default |
+| `11_titles` | both configs over two whole titles, scored by brand rather than by box | detection improved 6.5x the crops and end-to-end recall moved 1 → 3 brands of 15, because zero-shot *text* identification is the weak link, not the boxes |
+| `12_logo_pool` | identify crops by IMAGE against a SigLIP-embedded reference pool | 7/7 testable brands against text's 3, every match correct by eye. Presence saturates; measured *screen time* is what the config change buys (up to 7.9x) |
+| `13_sliced` | sliced inference, and an OWLv2 union | 2x2 tiling +27% usable coverage; finer is worse because seams cut wide marks. The OWLv2 union is redundant once you tile. Shipped as `brand_tiles` |
+| `14_yoloe_imgsz` | can resolution or slicing rescue the `fast` path | its proposal set is resolution-limited: slicing doubles usable coverage (3x2, not 2x2), but the compact-box bias is architectural and banner marks stay near zero |
+| `15_temporal` | grouping per-frame detections into one row per appearance, both backends | 33-71% fewer index rows with no measured recall loss at `keep=2`. Keeping ONE vector per track loses a brand, and no single-representative rule survives scrutiny -- the principled one (biggest crop) fails. `min_frames` measured harmful |
+| `16_padding` | is `crop_padding` 0.06 still right after the gate and tiling changed the box distribution | **no change shipped.** 0.06 sits just above where too-tight crops cost brands (0.00 loses one AND admits the sweep's only control false positive) and below where context dilutes. Higher padding gains nothing reliable |
+| `17_ocr` | read the words on screen, as a search channel and as a proposal source, both paths | text-query rank is wordmark-shaped and rank-fragile on BOTH backends (State Farm 23 → 881 purely from 6.5x the crops). OCR finds 10 of 15 brands on the broadcast with **0/6 controls**, including 5 the reference pool cannot reach at all — but 4 of 14 on animation. Its boxes lift `fast` usable 0.125 → 0.198 and its banner band 0.00 → 0.50. Shipped as `ocr`, off by default |
 
 ## Running things
 

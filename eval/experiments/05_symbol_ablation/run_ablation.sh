@@ -5,7 +5,7 @@ pwd
 P="podman run --rm --entrypoint /opt/conda/envs/mlpod/bin/python \
    --volume=$R/.cache:/root/.cache --volume=$R/eval:/elv/eval \
    --device nvidia.com/gpu=0 --network host -e HF_HOME=/root/.cache \
-   -e ELV_WEIGHTS_DIR=/root/.cache/detection localhost/general_detection"
+   -e ELV_WEIGHTS_DIR=/root/.cache/detection localhost/model-frame-vector"
 B="gdino owlv2 yoloe11-text yoloe26-text world-text"
 echo "=== mark7 (6 marks + symbol) ==="
 $P /elv/eval/tools/run_bp.py --backends $B \

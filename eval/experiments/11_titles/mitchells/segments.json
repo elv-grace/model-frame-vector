@@ -1,0 +1,19 @@
+{
+ "source": "test-files/val/sony-movie_mitchells-v-machines.mp4",
+ "segment_seconds": 45,
+ "decoded_fps": 6,
+ "segments": {
+  "mitchells_000_at301": 301,
+  "mitchells_001_at927": 927,
+  "mitchells_002_at1553": 1553,
+  "mitchells_003_at2179": 2179,
+  "mitchells_004_at2806": 2806,
+  "mitchells_005_at3432": 3432,
+  "mitchells_006_at4058": 4058,
+  "mitchells_007_at4684": 4684,
+  "mitchells_008_at5311": 5311,
+  "mitchells_009_at5937": 5937,
+  "mitchells_010_at6563": 6563,
+  "mitchells_011_at7190": 7190
+ }
+}

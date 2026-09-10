@@ -1,0 +1,16 @@
+{
+ "tiles": "4x3",
+ "overlap": 0.2,
+ "owlv2": false,
+ "full_frame": true,
+ "passes_per_frame": 13,
+ "gdino_conf": 0.07,
+ "prompts": [
+  "logo",
+  "letter logo",
+  "brand",
+  "car logo"
+ ],
+ "nms_iou": 0.6,
+ "max_detections": 100
+}

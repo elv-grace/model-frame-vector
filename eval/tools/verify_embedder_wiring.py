@@ -17,7 +17,7 @@ Run it inside the container so the versions under test are the shipped ones:
     podman run --rm --entrypoint /opt/conda/envs/mlpod/bin/python \\
         --volume=$PWD/eval:/elv/eval:ro --volume=detection_cache:/root/.cache \\
         --network host -e HF_HOME=/root/.cache -e MD_ROOT=/elv \\
-        --device nvidia.com/gpu=0 localhost/general_detection \\
+        --device nvidia.com/gpu=0 localhost/model-frame-vector \\
         -u /elv/eval/tools/verify_embedder_wiring.py
 """
 from __future__ import annotations

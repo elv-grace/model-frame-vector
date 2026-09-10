@@ -1,0 +1,19 @@
+{
+ "source": "test-files/val/basketball_allstars.mp4",
+ "segment_seconds": 45,
+ "decoded_fps": 6,
+ "segments": {
+  "nba_000_at614": 614,
+  "nba_001_at1894": 1894,
+  "nba_002_at3174": 3174,
+  "nba_003_at4454": 4454,
+  "nba_004_at5734": 5734,
+  "nba_005_at7014": 7014,
+  "nba_006_at8295": 8295,
+  "nba_007_at9575": 9575,
+  "nba_008_at10855": 10855,
+  "nba_009_at12135": 12135,
+  "nba_010_at13415": 13415,
+  "nba_011_at14696": 14696
+ }
+}

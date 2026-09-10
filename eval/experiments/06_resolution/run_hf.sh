@@ -5,7 +5,7 @@ P="podman run --rm --entrypoint /opt/conda/envs/mlpod/bin/python \
    --volume=$R/.cache:/root/.cache --volume=$R/eval:/elv/eval \
    --device nvidia.com/gpu=0 --network host -e HF_HOME=/root/.cache \
    -e PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-   -e ELV_WEIGHTS_DIR=/root/.cache/detection localhost/general_detection"
+   -e ELV_WEIGHTS_DIR=/root/.cache/detection localhost/model-frame-vector"
 OUT=/elv/eval/experiments/06_resolution
 # Batch drops as resolution rises: activation memory goes with the square of the input.
 for SPEC in "800 4" "1100 2" "1400 1"; do

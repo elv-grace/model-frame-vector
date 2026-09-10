@@ -4,7 +4,7 @@ cd "$R"
 P="podman run --rm --entrypoint /opt/conda/envs/mlpod/bin/python \
    --volume=$R/.cache:/root/.cache --volume=$R/eval:/elv/eval \
    --device nvidia.com/gpu=0 --network host -e HF_HOME=/root/.cache \
-   -e ELV_WEIGHTS_DIR=/root/.cache/detection localhost/general_detection"
+   -e ELV_WEIGHTS_DIR=/root/.cache/detection localhost/model-frame-vector"
 OUT=/elv/eval/experiments/06_resolution
 
 # Ultralytics backends: imgsz must be a multiple of 32. 640 is the trained size.

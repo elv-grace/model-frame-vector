@@ -1,0 +1,1131 @@
+{
+ "State Farm": {
+  "keys": {
+   "strict": [
+    "STATEFARM"
+   ],
+   "tokens": [
+    "STATE",
+    "FARM"
+   ]
+  },
+  "strict": {
+   "frames": 183,
+   "found": true,
+   "examples": [
+    [
+     "STATEFARM",
+     109
+    ],
+    [
+     "NBASHOWTIMEPRESENTEDBYSTATEFARM",
+     44
+    ],
+    [
+     "STATEFAM",
+     28
+    ],
+    [
+     "STATEFARN",
+     20
+    ],
+    [
+     "STATEFAR",
+     7
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 119,
+   "found": true,
+   "examples": [
+    [
+     "STATEFARM",
+     218
+    ],
+    [
+     "NBASHOWTIMEPRESENTEDBYSTATEFARM",
+     88
+    ],
+    [
+     "UCLAVS10MICHIGANSTATE",
+     7
+    ],
+    [
+     "FARM",
+     5
+    ],
+    [
+     "SSTATEFARM",
+     4
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 196,
+   "found": true,
+   "examples": [
+    [
+     "STATEFARM",
+     109
+    ],
+    [
+     "NBASHOWTIMEPRESENTEDBYSTATEFARM",
+     44
+    ],
+    [
+     "STATEFAM",
+     28
+    ],
+    [
+     "STATEFARN",
+     20
+    ],
+    [
+     "UCLAVS10MICHIGANSTATE",
+     8
+    ]
+   ]
+  },
+  "union": {
+   "frames": 190,
+   "found": true,
+   "examples": [
+    [
+     "STATEFARM",
+     109
+    ],
+    [
+     "NBASHOWTIMEPRESENTEDBYSTATEFARM",
+     44
+    ],
+    [
+     "STATEFAM",
+     28
+    ],
+    [
+     "STATEFARN",
+     20
+    ],
+    [
+     "STATEFAR",
+     7
+    ]
+   ]
+  }
+ },
+ "NBC": {
+  "keys": {
+   "strict": [
+    "NBC"
+   ],
+   "tokens": [
+    "NBC"
+   ]
+  },
+  "strict": {
+   "frames": 36,
+   "found": true,
+   "examples": [
+    [
+     "NBC",
+     36
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 36,
+   "found": true,
+   "examples": [
+    [
+     "NBC",
+     36
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 36,
+   "found": true,
+   "examples": [
+    [
+     "NBC",
+     36
+    ]
+   ]
+  },
+  "union": {
+   "frames": 36,
+   "found": true,
+   "examples": [
+    [
+     "NBC",
+     36
+    ]
+   ]
+  }
+ },
+ "Peacock": {
+  "keys": {
+   "strict": [
+    "PEACOCK"
+   ],
+   "tokens": [
+    "PEACOCK"
+   ]
+  },
+  "strict": {
+   "frames": 121,
+   "found": true,
+   "examples": [
+    [
+     "PEACOCK",
+     53
+    ],
+    [
+     "NBCPEACOCK",
+     47
+    ],
+    [
+     "COMINGUPNEXTONNBCPEACOCK",
+     16
+    ],
+    [
+     "PEOCOCK",
+     7
+    ],
+    [
+     "WED7ETPEACOCK",
+     5
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 121,
+   "found": true,
+   "examples": [
+    [
+     "PEACOCK",
+     53
+    ],
+    [
+     "NBCPEACOCK",
+     47
+    ],
+    [
+     "COMINGUPNEXTONNBCPEACOCK",
+     16
+    ],
+    [
+     "PEOCOCK",
+     7
+    ],
+    [
+     "WED7ETPEACOCK",
+     5
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 121,
+   "found": true,
+   "examples": [
+    [
+     "PEACOCK",
+     53
+    ],
+    [
+     "NBCPEACOCK",
+     47
+    ],
+    [
+     "COMINGUPNEXTONNBCPEACOCK",
+     16
+    ],
+    [
+     "PEOCOCK",
+     7
+    ],
+    [
+     "WED7ETPEACOCK",
+     5
+    ]
+   ]
+  },
+  "union": {
+   "frames": 121,
+   "found": true,
+   "examples": [
+    [
+     "PEACOCK",
+     53
+    ],
+    [
+     "NBCPEACOCK",
+     47
+    ],
+    [
+     "COMINGUPNEXTONNBCPEACOCK",
+     16
+    ],
+    [
+     "PEOCOCK",
+     7
+    ],
+    [
+     "WED7ETPEACOCK",
+     5
+    ]
+   ]
+  }
+ },
+ "NBA": {
+  "keys": {
+   "strict": [
+    "NBA"
+   ],
+   "tokens": [
+    "NBA"
+   ]
+  },
+  "strict": {
+   "frames": 120,
+   "found": true,
+   "examples": [
+    [
+     "NBA",
+     120
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 120,
+   "found": true,
+   "examples": [
+    [
+     "NBA",
+     120
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 120,
+   "found": true,
+   "examples": [
+    [
+     "NBA",
+     120
+    ]
+   ]
+  },
+  "union": {
+   "frames": 120,
+   "found": true,
+   "examples": [
+    [
+     "NBA",
+     120
+    ]
+   ]
+  }
+ },
+ "Kia": {
+  "keys": {
+   "strict": [
+    "KIA"
+   ],
+   "tokens": [
+    "KIA"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Nike": {
+  "keys": {
+   "strict": [
+    "NIKE"
+   ],
+   "tokens": [
+    "NIKE"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Tissot": {
+  "keys": {
+   "strict": [
+    "TISSOT"
+   ],
+   "tokens": [
+    "TISSOT"
+   ]
+  },
+  "strict": {
+   "frames": 23,
+   "found": true,
+   "examples": [
+    [
+     "TISSOT",
+     19
+    ],
+    [
+     "TSSOT",
+     3
+    ],
+    [
+     "ITISSOT",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 23,
+   "found": true,
+   "examples": [
+    [
+     "TISSOT",
+     19
+    ],
+    [
+     "TSSOT",
+     3
+    ],
+    [
+     "ITISSOT",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 23,
+   "found": true,
+   "examples": [
+    [
+     "TISSOT",
+     19
+    ],
+    [
+     "TSSOT",
+     3
+    ],
+    [
+     "ITISSOT",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 23,
+   "found": true,
+   "examples": [
+    [
+     "TISSOT",
+     19
+    ],
+    [
+     "TSSOT",
+     3
+    ],
+    [
+     "ITISSOT",
+     1
+    ]
+   ]
+  }
+ },
+ "Gatorade": {
+  "keys": {
+   "strict": [
+    "GATORADE"
+   ],
+   "tokens": [
+    "GATORADE"
+   ]
+  },
+  "strict": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "GATRADE",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "GATRADE",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "GATRADE",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "GATRADE",
+     1
+    ]
+   ]
+  }
+ },
+ "AT&T": {
+  "keys": {
+   "strict": [
+    "ATT"
+   ],
+   "tokens": [
+    "ATT"
+   ]
+  },
+  "strict": {
+   "frames": 5,
+   "found": true,
+   "examples": [
+    [
+     "ATT",
+     5
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 5,
+   "found": true,
+   "examples": [
+    [
+     "ATT",
+     5
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 5,
+   "found": true,
+   "examples": [
+    [
+     "ATT",
+     5
+    ]
+   ]
+  },
+  "union": {
+   "frames": 5,
+   "found": true,
+   "examples": [
+    [
+     "ATT",
+     5
+    ]
+   ]
+  }
+ },
+ "Michelob Ultra": {
+  "keys": {
+   "strict": [
+    "MICHELOBULTRA"
+   ],
+   "tokens": [
+    "MICHELOB",
+    "ULTRA"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 4,
+   "found": true,
+   "examples": [
+    [
+     "ULTRA",
+     4
+    ]
+   ]
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "DraftKings": {
+  "keys": {
+   "strict": [
+    "DRAFTKINGS"
+   ],
+   "tokens": [
+    "DRAFTKINGS"
+   ]
+  },
+  "strict": {
+   "frames": 4,
+   "found": true,
+   "examples": [
+    [
+     "ORAFTKINGS",
+     2
+    ],
+    [
+     "URAFTKINGS",
+     1
+    ],
+    [
+     "SRAFTKINGS",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 4,
+   "found": true,
+   "examples": [
+    [
+     "ORAFTKINGS",
+     2
+    ],
+    [
+     "URAFTKINGS",
+     1
+    ],
+    [
+     "SRAFTKINGS",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 4,
+   "found": true,
+   "examples": [
+    [
+     "ORAFTKINGS",
+     2
+    ],
+    [
+     "URAFTKINGS",
+     1
+    ],
+    [
+     "SRAFTKINGS",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 4,
+   "found": true,
+   "examples": [
+    [
+     "ORAFTKINGS",
+     2
+    ],
+    [
+     "URAFTKINGS",
+     1
+    ],
+    [
+     "SRAFTKINGS",
+     1
+    ]
+   ]
+  }
+ },
+ "American Express": {
+  "keys": {
+   "strict": [
+    "AMERICANEXPRESS"
+   ],
+   "tokens": [
+    "AMERICAN",
+    "EXPRESS"
+   ]
+  },
+  "strict": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "ALLSTARINTERMISSIONPRESENTEDBYAMERICANEXPRESS",
+     1
+    ],
+    [
+     "AMERICANEXPRESS",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 12,
+   "found": true,
+   "examples": [
+    [
+     "AMERICAN",
+     11
+    ],
+    [
+     "EXPRESS",
+     11
+    ],
+    [
+     "ALLSTARINTERMISSIONPRESENTEDBYAMERICANEXPRESS",
+     2
+    ],
+    [
+     "AMERICANEXPRESS",
+     2
+    ],
+    [
+     "AMERICA",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 25,
+   "found": true,
+   "examples": [
+    [
+     "AMERICAN",
+     14
+    ],
+    [
+     "EXPRESS",
+     12
+    ],
+    [
+     "AMERICA",
+     10
+    ],
+    [
+     "ALLSTARINTERMISSIONPRESENTEDBYAMERICANEXPRESS",
+     2
+    ],
+    [
+     "AMERICANEXPRESS",
+     2
+    ]
+   ]
+  },
+  "union": {
+   "frames": 12,
+   "found": true,
+   "examples": [
+    [
+     "ALLSTARINTERMISSIONPRESENTEDBYAMERICANEXPRESS",
+     1
+    ],
+    [
+     "AMERICANEXPRESS",
+     1
+    ]
+   ]
+  }
+ },
+ "CeraVe": {
+  "keys": {
+   "strict": [
+    "CERAVE"
+   ],
+   "tokens": [
+    "CERAVE"
+   ]
+  },
+  "strict": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "CERAVE",
+     3
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "CERAVE",
+     3
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "CERAVE",
+     3
+    ]
+   ]
+  },
+  "union": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "CERAVE",
+     3
+    ]
+   ]
+  }
+ },
+ "Amazon Prime": {
+  "keys": {
+   "strict": [
+    "AMAZONPRIME"
+   ],
+   "tokens": [
+    "AMAZON",
+    "PRIME"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 22,
+   "found": true,
+   "examples": [
+    [
+     "PRIMETIME",
+     16
+    ],
+    [
+     "PRIME",
+     2
+    ],
+    [
+     "IOPMETPRIME",
+     2
+    ],
+    [
+     "ETPRIME",
+     1
+    ],
+    [
+     "PRIMETIMEINMILAN",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Olympics": {
+  "keys": {
+   "strict": [
+    "OLYMPICS"
+   ],
+   "tokens": [
+    "OLYMPICS"
+   ]
+  },
+  "strict": {
+   "frames": 10,
+   "found": true,
+   "examples": [
+    [
+     "CORTINAOLYMPICS",
+     9
+    ],
+    [
+     "THEWINTEROLYMPICS",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 10,
+   "found": true,
+   "examples": [
+    [
+     "CORTINAOLYMPICS",
+     9
+    ],
+    [
+     "THEWINTEROLYMPICS",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 10,
+   "found": true,
+   "examples": [
+    [
+     "CORTINAOLYMPICS",
+     9
+    ],
+    [
+     "THEWINTEROLYMPICS",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 10,
+   "found": true,
+   "examples": [
+    [
+     "CORTINAOLYMPICS",
+     9
+    ],
+    [
+     "THEWINTEROLYMPICS",
+     1
+    ]
+   ]
+  }
+ },
+ "Lufthansa": {
+  "keys": {
+   "strict": [
+    "LUFTHANSA"
+   ],
+   "tokens": [
+    "LUFTHANSA"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Banco Santander": {
+  "keys": {
+   "strict": [
+    "BANCOSANTANDER"
+   ],
+   "tokens": [
+    "BANCO",
+    "SANTANDER"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Carlsberg": {
+  "keys": {
+   "strict": [
+    "CARLSBERG"
+   ],
+   "tokens": [
+    "CARLSBERG"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Renault": {
+  "keys": {
+   "strict": [
+    "RENAULT"
+   ],
+   "tokens": [
+    "RENAULT"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Aeroflot": {
+  "keys": {
+   "strict": [
+    "AEROFLOT"
+   ],
+   "tokens": [
+    "AEROFLOT"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Danone": {
+  "keys": {
+   "strict": [
+    "DANONE"
+   ],
+   "tokens": [
+    "DANONE"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ }
+}

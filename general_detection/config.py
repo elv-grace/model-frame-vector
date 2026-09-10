@@ -3,65 +3,105 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from general_detection.prompts import DEFAULT_CLASS_PROMPTS
-
 
 @dataclass
 class RuntimeConfig:
-    """Runtime tunables for the crop-and-embed entity tagger, injected per-request via
-    `--params` in run.py.
+    """Runtime tunables for the frame-vector tagger, injected per-request via `--params`
+    in run.py.
 
     See the README's "Runtime parameters" table for provenance: some defaults are
     inherited from sibling taggers, others are explicitly uncalibrated placeholders and
-    are marked as such below.
-    """
+    are marked as such below."""
 
-    # ---- what to detect ---------------------------------------------------------
+    # ---- what to embed ----------------------------------------------------------
 
-    # What to look for. None means the default, ["brand", "person"].
+    # THE MODE SWITCH. None (the default) means no detection at all: one whole-frame SigLIP 2
+    # vector per sampled frame. Setting it turns on the detection phase, and then only the
+    # detected crops are embedded.
     #
     # A term naming a known parent expands to that parent's phrasings, so "brand" becomes the
-    # six mark terms rather than the literal word -- which matters, because the bare word is a
-    # far weaker prompt and only Grounding DINO grounds it at all. Any other term becomes its
+    # four mark terms "brand", "logo", "car logo", and "letter logo". Any other term becomes its
     # own parent with itself as the single phrasing, so ["car"] is a valid target.
     #
     # Targets are ROUTED to detectors: "person" goes to the closed COCO backend, everything else
     # to the open-vocabulary one, and a detector with nothing routed to it is never loaded. So
     # ["person"] never pays for the brand model, and ["car"] never pays for the person model.
-    detect_target: Optional[List[str]] = None
+    # With this unset, none of the detector weights are loaded at all.
+    detect_target: Optional[List[str]] = None # previously None meant ["brand", "person"]
 
-    # Which open-vocabulary backend serves non-person targets.
+    # Which open-vocabulary backend serves non-person targets. Ignored with detection off.
     #
-    #   "fast"      YOLOE-26 @1280.       brand AP 0.133, coverage 0.25,  98 ms/frame
-    #   "coverage"  Grounding DINO @800.  brand AP 0.205, coverage 0.61, 293 ms/frame
+    #   "coverage"  Grounding DINO @800, conf 0.07.  coverage 0.469, usable 0.469, 21 boxes/frame
+    #   "fast"      YOLOE-26 @1280, conf 0.007.      coverage 0.219, usable 0.125,  3.5 boxes/frame
     #
-    # These are NOT fast-versus-accurate. At their shipping operating points held-out F1 is
-    # 0.267 against 0.286 -- seven percent apart. What separates them is COVERAGE: Grounding
-    # DINO finds ~2.4x as many DISTINCT marks, and a mark that is never cropped can never be
-    # retrieved. Choose "coverage" when recall of marks matters more than throughput; it costs
-    # roughly 2x end to end.
-    brand_detector: str = "fast"
+    # "coverage" is the default. Each crop is a SigLIP forward pass and an index row.
+    # Choose "fast" when index size or throughput is the
+    # binding constraint and partial brand recall is acceptable.
+    brand_detector: str = "coverage"
 
     # ---- detection --------------------------------------------------------------
 
-    # Explicit {parent: [phrasings]} mapping. Normally left at the default and driven by
-    # `detect_target` instead; set it directly to control phrasings per parent.
+    # Explicit {parent: [phrasings]} mapping, for controlling phrasings per parent. Empty by
+    # default; `detect_target` wins when both are set. Setting either one turns detection on.
+    # `DEFAULT_CLASS_PROMPTS` is what `detect_target: ["brand", "person"]` expands to.
     # Overriding it re-encodes the text prompts (seconds); it does not reload the model.
-    class_prompts: Dict[str, List[str]] = field(
-        default_factory=lambda: {k: list(v) for k, v in DEFAULT_CLASS_PROMPTS.items()}
-    )
+    class_prompts: Dict[str, List[str]] = field(default_factory=dict)
 
-    # Per-parent confidence overrides. EMPTY by default, because each backend now carries its
-    # own measured threshold (see detector.py BRAND_BACKENDS / PERSON_BACKEND) and those are the
-    # values leave-one-clip-out selection chose.
-    # A single shared `conf` was removed rather than retuned. Detector scores are not comparable
-    # across backends -- YOLOE's text-similarity scores, YOLO11's sigmoid class scores and
-    # Grounding DINO's query scores are on different scales -- so one number could only ever be
-    # right for one of them. The old default of 0.25 was ultralytics' closed-vocabulary value and
-    # measured badly.
-    # Use this to override a specific parent. CAREFUL: passing class_conf via --params REPLACES
+    # Per-parent confidence overrides. Empty by default, because each backend now carries its
+    # own measured threshold (see detector.py BRAND_BACKENDS / PERSON_BACKEND).
+    # CAREFUL: passing class_conf via --params REPLACES
     # this dict, it does not merge into it, so pass every class you want gated.
     class_conf: Dict[str, float] = field(default_factory=dict)
+
+    # Sliced inference: "COLSxROWS". "1x1" is off. The detector runs once on the whole frame
+    # and once per tile, and the tile boxes are merged back in frame coordinates before the
+    # normal gate/suppress/crop path -- so nothing downstream changes, including the crops,
+    # which are always taken from the original frame.
+    #
+    # OFF by default because of tradeoff between detection wall clock and usable coverage.
+    # Turn it on for an archival or coverage-report pass, where the
+    # index is built once and small marks matter.
+    # ("2x2" for "coverage", "3x2" for "fast")
+    # See detector.py `_raw_tiled` for aspect-band evidence.
+    brand_tiles: str = "1x1"
+
+    # Fraction of a tile's own width/height added on each side, so neighbouring tiles overlap.
+    # Without it a tile seam is a blind spot as wide as the mark sitting on it.
+    tile_overlap: float = 0.2
+
+    # ---- OCR channel -------------------------------------------------------------
+
+    # Read the words on the screen and index them beside the vectors. Requires `detect_target`:
+    # there is nothing to stamp a string onto without detections, so setting it with detection
+    # off is an error rather than a no-op.
+    #
+    #   "off"      no OCR pass. The default (see eval/experiments/17_ocr).
+    #   "text"     one OCR pass per frame; every detection whose box contains a text region
+    #              gets `additional_info.text`. No new crops, no new index rows, no change to
+    #              detection -- purely additive to what a run already emits.
+    #   "propose"  additionally, text regions the detector did NOT box become brand detections
+    #              of their own, with `prompt: "ocr"`.
+    #
+    # OFF by default for two reasons, both measured (eval/experiments/17_ocr).
+    ocr: str = "off"
+
+    # Minimum easyocr recognition confidence for a STRING to be attached to a tag. 0.2 is where
+    # the reads stop being words: below it the output is single characters and fragments of
+    # jersey numbers. At 0.2 all six known-absent control brands score zero across both titles.
+    ocr_conf: float = 0.2
+
+    # Minimum confidence for a text region to be used as a PROPOSAL BOX under `ocr: "propose"`.
+    # Zero -- i.e. every region CRAFT localises -- because the box is worth cropping no matter the text.
+    ocr_box_conf: float = 0.0
+
+    # easyocr's `mag_ratio`: upsample the frame before text DETECTION (not recognition).
+    # Worth setting for an archival pass, not for a routine one. Measured.
+    ocr_mag: float = 1.0
+
+    # Fraction of a text region that must lie inside a detection box for its string to be
+    # attached to that detection. Containment rather than IoU: a wordmark is usually far smaller
+    # than the box holding it, and IoU would score that pairing near zero.
+    ocr_attach_overlap: float = 0.7
 
     # Ultralytics' internal NMS IoU, applied per class id (i.e. per prompt).
     iou: float = 0.7
@@ -70,7 +110,7 @@ class RuntimeConfig:
     # detection. The `iou` stage above cannot do this: those are distinct class ids, so
     # ultralytics never compares their boxes, and one jersey badge survives as one box per
     # phrasing — N near-identical crops, N near-identical vectors, N stacked overlay rectangles.
-    # 0.6, and chosen by a CONSTRAINT rather than by maximising a score. Measured against box
+    # Chosen by a CONSTRAINT rather than by maximising a score. Measured against box
     # ground truth, the constraint is that coverage must NOT fall.
     nms_iou: float = 0.6
 
@@ -83,7 +123,7 @@ class RuntimeConfig:
     # Hard cap per frame, applied last, highest score first. Each survivor costs one
     # SigLIP 2 forward pass, so this is the pipeline's primary cost knob. (Ultralytics'
     # own max_det default is 300, which here would mean 300 embeds per frame.)
-    max_detections: int = 30
+    max_detections: int = 100
 
     # Per-detector input size and threshold. None means "use the backend's measured default"
     # (detector.py), which is what you want unless you are deliberately re-tuning.
@@ -132,18 +172,11 @@ class RuntimeConfig:
     max_upscale: Optional[float] = None
 
     # L2-normalize each emitted vector so cosine similarity reduces to a dot product.
-    # SigLIP 2 is trained with a sigmoid loss over scaled dot products of already-normalized
-    # embeddings, so cosine *is* its trained similarity and the pooled output's magnitude is
-    # an artifact — normalizing is lossless.
+    # Lossless.
     normalize: bool = True
 
     # Crops per forward pass through the vision tower.
     embed_batch_size: int = 32
-
-    # Additionally emit one whole-frame vector per frame, with an empty tag and a full-frame
-    # box. Off by default. Enable if this index needs to answer "find frames that look like
-    # this crop" — there is no separate frame embedder feeding this space.
-    embed_whole_frame: bool = False
 
     # ---- output -----------------------------------------------------------------
 

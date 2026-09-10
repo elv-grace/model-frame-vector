@@ -20,3 +20,38 @@ __pycache__
 test-files/long/
 smoke-in/
 smoke-out/
+
+# 2-minute NBA segment cut from test-files/long/ for the config A/B video check;
+# regenerate with the ffmpeg line in eval/experiments/10_config_ab/README.md
+test-files/seg/
+# frame samples extracted from full titles by eval/box_gt/sample_frames.sh
+test-files/frames/
+test-files/val/
+# ---- experiment run outputs -------------------------------------------------------
+#
+# The rule: a run whose vectors were STRIPPED is committed, a run that kept them is not.
+# Stripped runs are ~50-600 KB each and are the evidence behind the scored tables, so
+# 10_config_ab, 13_sliced and 14_yoloe_imgsz are all in the repo. A 768-float array per tag
+# is ~97% of the file, which is the whole difference: 5 GB against 13 MB.
+#
+# There is no filename convention separating them, so each vector-carrying run needs its own
+# line here. If you add an experiment that keeps vectors, add it below.
+
+# title runs keep their vectors (retrieval question) and are ~1.4 GB
+eval/experiments/11_titles/*/*/out.jsonl
+# SigLIP-embedded reference pool, rebuildable with eval/box_gt/build_logo_pool.py
+eval/experiments/12_logo_pool/*.npz
+# temporal runs keep their vectors too -- the whole question is whether grouping loses recall,
+# which cannot be asked without them. 5.0 GB across eight arms.
+eval/experiments/15_temporal/*/*/out.jsonl
+# the aggregator's index-shaped output: `keep` vectors per track, 2.2 GB. Regenerate with
+# eval/tools/aggregate_temporal.py -- but note that needs the out.jsonl above, so regenerating
+# from a clean checkout means re-running the tagger.
+**/track_vectors.jsonl
+#
+# `appearances.jsonl` is deliberately NOT ignored despite being 20 MB. It carries no vectors,
+# it is the coverage report itself rather than an intermediate, and once the two files above
+# are gone it is the only surviving artifact of a run that costs hours of GPU to reproduce.
+
+# container stdout from eval/box_gt/run_config_ab.sh, kept only while a run is being debugged
+eval/experiments/*/*/*/run.log

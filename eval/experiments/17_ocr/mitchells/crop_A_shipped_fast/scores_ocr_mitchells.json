@@ -1,0 +1,741 @@
+{
+ "Instagram": {
+  "keys": {
+   "strict": [
+    "INSTAGRAM"
+   ],
+   "tokens": [
+    "INSTAGRAM"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Twitter": {
+  "keys": {
+   "strict": [
+    "TWITTER"
+   ],
+   "tokens": [
+    "TWITTER"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Facebook": {
+  "keys": {
+   "strict": [
+    "FACEBOOK"
+   ],
+   "tokens": [
+    "FACEBOOK"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "YouTube": {
+  "keys": {
+   "strict": [
+    "YOUTUBE"
+   ],
+   "tokens": [
+    "YOUTUBE"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Amazon": {
+  "keys": {
+   "strict": [
+    "AMAZON"
+   ],
+   "tokens": [
+    "AMAZON"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Reddit": {
+  "keys": {
+   "strict": [
+    "REDDIT"
+   ],
+   "tokens": [
+    "REDDIT"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Shasta Soda": {
+  "keys": {
+   "strict": [
+    "SHASTA"
+   ],
+   "tokens": [
+    "SHASTA"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Waffle House": {
+  "keys": {
+   "strict": [
+    "WAFFLEHOUSE"
+   ],
+   "tokens": [
+    "WAFFLE",
+    "HOUSE"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 2,
+   "found": true,
+   "examples": [
+    [
+     "HOUSE",
+     2
+    ]
+   ]
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "A&W Restaurants": {
+  "keys": {
+   "strict": [
+    "AW"
+   ],
+   "tokens": [
+    "AW"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "See's Candies": {
+  "keys": {
+   "strict": [
+    "SEES"
+   ],
+   "tokens": [
+    "SEES"
+   ]
+  },
+  "strict": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SEES",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SEES",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SEES",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SEES",
+     1
+    ]
+   ]
+  }
+ },
+ "Sony headphones": {
+  "keys": {
+   "strict": [
+    "SONY"
+   ],
+   "tokens": [
+    "SONY"
+   ]
+  },
+  "strict": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  }
+ },
+ "Sony Handycam": {
+  "keys": {
+   "strict": [
+    "SONY"
+   ],
+   "tokens": [
+    "SONY"
+   ]
+  },
+  "strict": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "SONY",
+     1
+    ]
+   ]
+  }
+ },
+ "Wired magazine": {
+  "keys": {
+   "strict": [
+    "WIRED"
+   ],
+   "tokens": [
+    "WIRED"
+   ]
+  },
+  "strict": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "MOCKWIREDCOVERUSEDWITHPERMISSIONOFCONDENAST",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "MOCKWIREDCOVERUSEDWITHPERMISSIONOFCONDENAST",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "MOCKWIREDCOVERUSEDWITHPERMISSIONOFCONDENAST",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 1,
+   "found": true,
+   "examples": [
+    [
+     "MOCKWIREDCOVERUSEDWITHPERMISSIONOFCONDENAST",
+     1
+    ]
+   ]
+  }
+ },
+ "People magazine": {
+  "keys": {
+   "strict": [
+    "PEOPLE"
+   ],
+   "tokens": [
+    "PEOPLE"
+   ]
+  },
+  "strict": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "PEOPLELOGOANDCOVERDESIGN",
+     1
+    ],
+    [
+     "PEPLE",
+     1
+    ],
+    [
+     "PEOPLE",
+     1
+    ]
+   ]
+  },
+  "tokens": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "PEOPLELOGOANDCOVERDESIGN",
+     1
+    ],
+    [
+     "PEPLE",
+     1
+    ],
+    [
+     "PEOPLE",
+     1
+    ]
+   ]
+  },
+  "lenient": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "PEOPLELOGOANDCOVERDESIGN",
+     1
+    ],
+    [
+     "PEPLE",
+     1
+    ],
+    [
+     "PEOPLE",
+     1
+    ]
+   ]
+  },
+  "union": {
+   "frames": 3,
+   "found": true,
+   "examples": [
+    [
+     "PEOPLELOGOANDCOVERDESIGN",
+     1
+    ],
+    [
+     "PEPLE",
+     1
+    ],
+    [
+     "PEOPLE",
+     1
+    ]
+   ]
+  }
+ },
+ "Lufthansa": {
+  "keys": {
+   "strict": [
+    "LUFTHANSA"
+   ],
+   "tokens": [
+    "LUFTHANSA"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Banco Santander": {
+  "keys": {
+   "strict": [
+    "BANCOSANTANDER"
+   ],
+   "tokens": [
+    "BANCO",
+    "SANTANDER"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Carlsberg": {
+  "keys": {
+   "strict": [
+    "CARLSBERG"
+   ],
+   "tokens": [
+    "CARLSBERG"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Renault": {
+  "keys": {
+   "strict": [
+    "RENAULT"
+   ],
+   "tokens": [
+    "RENAULT"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Aeroflot": {
+  "keys": {
+   "strict": [
+    "AEROFLOT"
+   ],
+   "tokens": [
+    "AEROFLOT"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ },
+ "Danone": {
+  "keys": {
+   "strict": [
+    "DANONE"
+   ],
+   "tokens": [
+    "DANONE"
+   ]
+  },
+  "strict": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "tokens": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "lenient": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  },
+  "union": {
+   "frames": 0,
+   "found": false,
+   "examples": []
+  }
+ }
+}

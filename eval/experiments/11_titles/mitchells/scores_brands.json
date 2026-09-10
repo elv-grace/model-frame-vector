@@ -1,0 +1,198 @@
+{
+ "A_shipped_fast": {
+  "crops": 1952,
+  "assigned": 300,
+  "brands": {
+   "Instagram": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Twitter": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Facebook": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "YouTube": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Amazon": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Reddit": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Shasta Soda": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Waffle House": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "A&W Restaurants": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "See's Candies": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Sony headphones": {
+    "crops": 3,
+    "best": 0.6177968382835388,
+    "found": true,
+    "top": []
+   },
+   "Sony Handycam": {
+    "crops": 15,
+    "best": 0.2680586576461792,
+    "found": true,
+    "top": []
+   },
+   "Wired magazine": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "People magazine": {
+    "crops": 1,
+    "best": 0.06990701705217361,
+    "found": true,
+    "top": []
+   }
+  },
+  "controls": {
+   "Lufthansa": 0,
+   "Banco Santander": 0,
+   "Carlsberg": 0,
+   "Renault": 0,
+   "Aeroflot": 0,
+   "Danone": 0
+  }
+ },
+ "B2_step1_conf07": {
+  "crops": 15759,
+  "assigned": 2985,
+  "brands": {
+   "Instagram": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Twitter": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Facebook": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "YouTube": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Amazon": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "Reddit": {
+    "crops": 1,
+    "best": 0.05449894070625305,
+    "found": true,
+    "top": []
+   },
+   "Shasta Soda": {
+    "crops": 1,
+    "best": 0.08394170552492142,
+    "found": true,
+    "top": []
+   },
+   "Waffle House": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "A&W Restaurants": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "See's Candies": {
+    "crops": 1,
+    "best": 0.13577714562416077,
+    "found": true,
+    "top": []
+   },
+   "Sony headphones": {
+    "crops": 5,
+    "best": 0.4783070385456085,
+    "found": true,
+    "top": []
+   },
+   "Sony Handycam": {
+    "crops": 44,
+    "best": 0.253182053565979,
+    "found": true,
+    "top": []
+   },
+   "Wired magazine": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   },
+   "People magazine": {
+    "crops": 0,
+    "best": 0.0,
+    "found": false,
+    "top": []
+   }
+  },
+  "controls": {
+   "Lufthansa": 1,
+   "Banco Santander": 0,
+   "Carlsberg": 0,
+   "Renault": 0,
+   "Aeroflot": 0,
+   "Danone": 0
+  }
+ }
+}

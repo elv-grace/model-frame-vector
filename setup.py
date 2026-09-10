@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name="general-detection",
+    name="model-frame-vector",
     version="0.1",
     packages=["general_detection"],
     python_requires=">=3.11",
@@ -23,6 +23,17 @@ setup(
         'ultralytics>=8.3.150',
         # Detections container + the per-class NMS used for the synonym-group dedupe pass.
         'supervision>=0.26.0',
+        # OCR channel (config `ocr`, default off): CRAFT text detection + a CRNN recogniser.
+        # Apache-2.0, so unlike ultralytics it adds no licence obligation. Its weights are NOT
+        # baked in -- they download on first use into the same mounted cache as the others.
+        # scikit-image and the rest are easyocr's own dependencies, pinned here only because
+        # this is where the dependency set is declared.
+        'easyocr>=1.7.2',
+        'scikit-image>=0.22',
+        'scipy',
+        'python-bidi',
+        'shapely',
+        'pyclipper',
         'Pillow>=10.0.0',
         'numpy',
         # image read path in common_ml.tagging.file_tagger (images tagged frame-directly)

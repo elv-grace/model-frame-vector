@@ -1,0 +1,10 @@
+{
+ "mode": "crop",
+ "run": "eval/experiments/11_titles/mitchells/A_shipped_fast",
+ "crops": 1952,
+ "of_total": 1952,
+ "regions": 1652,
+ "seconds": 47.8,
+ "per_crop_ms": 24.51,
+ "mag_ratio": 1.0
+}

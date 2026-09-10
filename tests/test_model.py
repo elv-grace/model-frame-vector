@@ -1,4 +1,4 @@
-"""Unit tests for the crop-and-embed path.
+"""Unit tests for both modes: the whole-frame default and the crop-and-embed path.
 
 The detector and embedder are stubbed, so these run without downloading YOLOE or SigLIP 2
 weights and without a GPU. The end-to-end test at the bottom is opt-in.
@@ -14,13 +14,14 @@ pytest.importorskip("transformers")
 from general_detection.config import RuntimeConfig
 from general_detection.detector import Detection, YoloeDetector
 from general_detection.embedder import Siglip2CropEmbedder
-from general_detection.model import EntityDetector
+from general_detection.model import FrameVectorModel
 
 _DIM = 8
 
 
 class _FakeEmbedder:
     model_id = "fake/siglip2"
+    revision = None
     dim = _DIM
 
     def embed(self, crops, cfg):
@@ -51,18 +52,91 @@ class _FakeDetector:
 
 
 def _model(cfg=None, detections=None, person=None):
-    # Bypass __init__ so no weights are loaded. The model holds two detector slots and either
-    # may be None -- a target routed to only one side never constructs the other.
-    model = object.__new__(EntityDetector)
-    model.config = cfg or RuntimeConfig()
+    """A model in DETECTION mode, as if `detect_target` had been passed.
+
+    __init__ is bypassed so no weights load. The model holds two detector slots and either may
+    be None -- a target routed to only one side never constructs the other, and neither being
+    filled is the frame-vector mode (see _frame_model).
+    """
+    model = object.__new__(FrameVectorModel)
+    model.config = cfg or RuntimeConfig(detect_target=["brand"])
     model._brand = _FakeDetector(detections)
     model._person = person
     model._brand_mode = "fast"
+    # No OCR reader: `ocr` defaults to "off", and a test that wants one sets it explicitly.
+    model._reader = None
+    model._ocr_label = "brand"
     model.embedder = _FakeEmbedder()
     return model
 
 
-# ---- tag shape ------------------------------------------------------------------
+def _frame_model(cfg=None):
+    """A model in FRAME-VECTOR mode: both detector slots empty, which is what an unset
+    `detect_target` leaves behind."""
+    model = _model(cfg or RuntimeConfig())
+    model._brand, model._ocr_label = None, None
+    return model
+
+
+# ---- the default mode: one whole-frame vector, no detection ---------------------
+
+
+def test_default_config_asks_for_no_detection():
+    """The mode switch. An unset `detect_target` must resolve to no prompts at all, which is
+    what keeps the detector weights from loading."""
+    model = object.__new__(FrameVectorModel)
+    assert model._resolve_prompts(RuntimeConfig()) == {}
+
+
+def test_default_emits_one_whole_frame_vector_per_frame():
+    tags = _frame_model().tag_frame(np.zeros((1080, 1920, 3), dtype=np.uint8))
+
+    assert len(tags) == 1
+    tag = tags[0]
+    assert tag.tag == ""   # the frame itself, not a detected entity
+    assert tag.box == {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0}
+    assert len(tag.vector) == _DIM
+
+
+def test_frame_vector_carries_the_embedder_recipe_and_no_detection_provenance():
+    info = _frame_model().tag_frame(np.zeros((100, 100, 3), dtype=np.uint8))[0].additional_info
+
+    assert info["embedder"] == "fake/siglip2"
+    assert info["dim"] == _DIM
+    assert info["box"] == {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0}
+    # nothing detected it and nothing was cropped, so these would describe nothing
+    for absent in ("prompt", "score", "detector", "crop_padding"):
+        assert absent not in info
+
+
+def test_frame_mode_emits_a_vector_even_on_a_blank_frame():
+    """Unlike the detection path, there is no "found nothing" case: every frame gets a vector."""
+    assert len(_frame_model().tag_frame(np.zeros((64, 64, 3), dtype=np.uint8))) == 1
+
+
+def test_output_tags_adds_nothing_in_frame_mode():
+    """A vector-less copy of a frame tag would carry no label and no box worth drawing."""
+    tags = _frame_model(RuntimeConfig(output_tags=True)).tag_frame(
+        np.zeros((100, 100, 3), dtype=np.uint8)
+    )
+    assert len(tags) == 1
+    assert tags[0].vector is not None
+
+
+def test_class_prompts_alone_also_turns_detection_on():
+    """The explicit escape hatch: `class_prompts` without `detect_target` still detects."""
+    model = object.__new__(FrameVectorModel)
+    cfg = RuntimeConfig(class_prompts={"logo": ["logo"]})
+    assert model._resolve_prompts(cfg) == {"logo": ["logo"]}
+
+
+def test_detect_target_wins_over_class_prompts():
+    model = object.__new__(FrameVectorModel)
+    cfg = RuntimeConfig(detect_target=["person"], class_prompts={"logo": ["logo"]})
+    assert model._resolve_prompts(cfg) == {"person": ["person"]}
+
+
+# ---- detection mode: tag shape --------------------------------------------------
 
 
 def test_tag_frame_emits_one_vector_tag_per_detection():
@@ -81,7 +155,6 @@ def test_tag_frame_emits_one_vector_tag_per_detection():
 def test_tag_carries_the_provenance_the_index_needs():
     info = _model().tag_frame(np.zeros((100, 100, 3), dtype=np.uint8))[0].additional_info
 
-    assert info["kind"] == "crop"
     assert info["prompt"] == "letter logo"  # which phrasing fired, for recall tuning
     assert info["score"] == 0.9
     assert info["dim"] == _DIM
@@ -108,23 +181,12 @@ def test_no_detections_emits_nothing():
     assert _model(detections=[]).tag_frame(np.zeros((100, 100, 3), dtype=np.uint8)) == []
 
 
-def test_embed_whole_frame_adds_one_untagged_full_frame_vector():
-    cfg = RuntimeConfig(embed_whole_frame=True)
-    tags = _model(cfg).tag_frame(np.zeros((100, 200, 3), dtype=np.uint8))
-
-    assert len(tags) == 2
-    frame_tag = tags[-1]
-    assert frame_tag.tag == ""   # the frame itself, not a detected entity
-    assert frame_tag.box == {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0}
-    assert frame_tag.additional_info["kind"] == "frame"
-    assert frame_tag.additional_info["box"] == frame_tag.box
-
-
-def test_embed_whole_frame_still_emits_when_nothing_is_detected():
-    cfg = RuntimeConfig(embed_whole_frame=True)
-    tags = _model(cfg, detections=[]).tag_frame(np.zeros((100, 100, 3), dtype=np.uint8))
-    assert len(tags) == 1
-    assert tags[0].additional_info["kind"] == "frame"
+def test_detection_mode_never_also_emits_a_frame_vector():
+    """One run is one vector space. A frame is downsampled to the patch budget and a crop is
+    upsampled to it, so the two are not comparable and are never mixed."""
+    tags = _model().tag_frame(np.zeros((100, 200, 3), dtype=np.uint8))
+    assert [t.tag for t in tags] == ["brand"]
+    assert not any(t.box == {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0} for t in tags)
 
 
 # ---- output_tags ----------------------------------------------------------------
@@ -157,7 +219,6 @@ def test_vectorless_twin_keeps_the_detection_provenance_but_not_the_embedder_pro
         np.zeros((100, 100, 3), dtype=np.uint8)
     )[1].additional_info
 
-    assert plain_info["kind"] == "crop"
     assert plain_info["prompt"] == "letter logo"
     assert plain_info["score"] == 0.9
     assert plain_info["detector"] == "fake-yoloe"
@@ -165,18 +226,6 @@ def test_vectorless_twin_keeps_the_detection_provenance_but_not_the_embedder_pro
     # embedder/dim/max_num_patches describe a vector this tag does not carry
     assert "embedder" not in plain_info
     assert "dim" not in plain_info
-
-
-def test_output_tags_leaves_the_whole_frame_vector_untwinned():
-    """The frame tag's label is empty, so a vector-less copy would carry no information."""
-    cfg = RuntimeConfig(output_tags=True, embed_whole_frame=True)
-    tags = _model(cfg).tag_frame(np.zeros((100, 100, 3), dtype=np.uint8))
-
-    # vector tag + its twin + one frame vector, and no fourth tag
-    assert len(tags) == 3
-    frame_tags = [t for t in tags if t.additional_info["kind"] == "frame"]
-    assert len(frame_tags) == 1
-    assert frame_tags[0].vector is not None
 
 
 def test_output_tags_emits_nothing_extra_when_nothing_is_detected():
@@ -188,19 +237,108 @@ def test_output_tags_emits_nothing_extra_when_nothing_is_detected():
 def test_constructor_output_tags_sets_the_config_for_this_run(monkeypatch, passed, expected):
     """The kwarg is a convenience for callers holding the model directly. None leaves the
     config alone; a bool sets it."""
-    monkeypatch.setattr(EntityDetector, "_apply_targets", lambda self, cfg: None)
+    monkeypatch.setattr(FrameVectorModel, "_apply_targets", lambda self, cfg: None)
     monkeypatch.setattr(
         "general_detection.model.Siglip2CropEmbedder",
         lambda *args, **kwargs: _FakeEmbedder(),
     )
 
-    model = EntityDetector(
+    model = FrameVectorModel(
         cfg=RuntimeConfig(),
         embedder_model_id="fake/siglip2",
         cache_dir="/tmp",
         output_tags=passed,
     )
     assert model.config.output_tags is expected
+
+
+# ---- ocr wiring ------------------------------------------------------------------
+#
+# The reader is stubbed: what is under test is how tag_frame uses what it returns, not easyocr.
+
+
+class _FakeReader:
+    def __init__(self, regions):
+        self._regions = regions
+
+    def read(self, img, cfg):
+        return self._regions
+
+
+def _region(text, conf, box):
+    from general_detection.ocr import TextRegion
+
+    return TextRegion(text=text, conf=conf, box=box,
+                      xyxy=(box["x1"] * 1000, box["y1"] * 1000,
+                            box["x2"] * 1000, box["y2"] * 1000))
+
+
+# Fully inside the fake detector's box of {0.1, 0.2, 0.3, 0.4}.
+_INSIDE = _region("STATE FARM", 0.9, {"x1": 0.15, "y1": 0.25, "x2": 0.28, "y2": 0.3})
+_ELSEWHERE = _region("TISSOT", 0.9, {"x1": 0.6, "y1": 0.6, "x2": 0.8, "y2": 0.65})
+
+
+def _ocr_cfg(mode):
+    """OCR rides on the detection phase, so a target comes with it."""
+    return RuntimeConfig(detect_target=["brand"], ocr=mode)
+
+
+def test_no_text_field_when_ocr_is_off():
+    """The default output is byte-identical to before the channel existed."""
+    info = _model().tag_frame(np.zeros((1000, 1000, 3), dtype=np.uint8))[0].additional_info
+    assert "text" not in info
+
+
+def test_text_mode_attaches_the_words_inside_the_box():
+    model = _model(_ocr_cfg("text"))
+    model._reader = _FakeReader([_INSIDE, _ELSEWHERE])
+    tags = model.tag_frame(np.zeros((1000, 1000, 3), dtype=np.uint8))
+
+    # No new tags: "text" annotates, it does not detect.
+    assert len(tags) == 1
+    assert tags[0].additional_info["text"] == ["STATE FARM"]
+
+
+def test_the_text_field_is_absent_rather_than_empty():
+    """An empty list on every tag would be noise in every search row."""
+    model = _model(_ocr_cfg("text"))
+    model._reader = _FakeReader([_ELSEWHERE])
+    info = model.tag_frame(np.zeros((1000, 1000, 3), dtype=np.uint8))[0].additional_info
+    assert "text" not in info
+
+
+def test_propose_mode_adds_the_unboxed_region_as_a_detection():
+    model = _model(_ocr_cfg("propose"))
+    model._reader = _FakeReader([_INSIDE, _ELSEWHERE])
+    tags = model.tag_frame(np.zeros((1000, 1000, 3), dtype=np.uint8))
+
+    # _INSIDE overlaps the detector's box but is far smaller, so IoU suppression keeps it too.
+    extra = [t for t in tags if t.additional_info["prompt"] == "ocr"]
+    assert len(extra) == 2
+    assert {t.additional_info["detector"] for t in extra} == {"easyocr-craft-crnn"}
+    assert all(t.vector is not None for t in extra)   # they are embedded like any other crop
+
+
+def test_text_mode_adds_no_detections():
+    model = _model(_ocr_cfg("text"))
+    model._reader = _FakeReader([_INSIDE, _ELSEWHERE])
+    tags = model.tag_frame(np.zeros((1000, 1000, 3), dtype=np.uint8))
+    assert [t.additional_info["prompt"] for t in tags] == ["letter logo"]
+
+
+def test_an_unknown_ocr_mode_is_rejected_rather_than_silently_ignored():
+    model = _model()
+    with pytest.raises(ValueError, match="ocr must be one of"):
+        model.set_config({**model.get_config(), "ocr": "on"})
+
+
+@pytest.mark.parametrize("mode", ["text", "propose"])
+def test_ocr_without_a_detect_target_is_rejected(mode):
+    """Rejected rather than silently ignored: in frame-vector mode there is no box to stamp a
+    string onto, so the request would pay the OCR pass and emit nothing from it."""
+    model = _frame_model()
+    with pytest.raises(ValueError, match="needs detections"):
+        model.set_config({**model.get_config(), "ocr": mode})
 
 
 # ---- cropping -------------------------------------------------------------------
@@ -371,14 +509,16 @@ def test_max_upscale_never_exceeds_max_num_patches():
     not os.getenv("ELV_DETECTION_INTEGRATION"),
     reason="set ELV_DETECTION_INTEGRATION=1 to run against real weights",
 )
-def test_end_to_end_against_a_test_file():
+# Both modes: the default loads only the embedder, the target also loads both detectors.
+@pytest.mark.parametrize("target", [None, ["brand", "person"]])
+def test_end_to_end_against_a_test_file(target):
     from common_ml.tagging.file_tagger import FileTagger
 
     from config import config
 
     test_file = os.path.join(os.path.dirname(__file__), "../test-files/1.mp4")
-    model = EntityDetector(
-        cfg=RuntimeConfig(),
+    model = FrameVectorModel(
+        cfg=RuntimeConfig(detect_target=target),
         embedder_model_id=config["model"]["embedder"]["model_id"],
         embedder_revision=config["model"]["embedder"].get("revision"),
         cache_dir=config["storage"]["cache_path"],
@@ -396,3 +536,6 @@ def test_end_to_end_against_a_test_file():
         # which is what keeps the box available for the overlay
         assert tag.frame_info is not None
         assert tag.frame_info.box
+    # the default mode is one vector per frame and nothing else
+    if target is None:
+        assert {t.tag for t in tags} == {""}

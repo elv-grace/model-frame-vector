@@ -1,0 +1,8 @@
+{
+ "model": "google/siglip2-base-patch16-naflex",
+ "max_num_patches": 256,
+ "images": 68933,
+ "dim": 768,
+ "brands": 2960,
+ "pool": "/ml/pools/logo_pool/2960brands"
+}

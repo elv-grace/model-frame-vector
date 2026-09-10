@@ -1,0 +1,10 @@
+{
+ "mode": "crop",
+ "run": "eval/experiments/11_titles/mitchells/B2_step1_conf07",
+ "crops": 6000,
+ "of_total": 15759,
+ "regions": 5048,
+ "seconds": 161.4,
+ "per_crop_ms": 26.9,
+ "mag_ratio": 1.0
+}

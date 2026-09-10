@@ -57,7 +57,8 @@ Two numbers are reported per class:
                     is the right measure for the default and text-target modes, where the
                     detector was told what to look for.
 
-    coverage        CLASS-AGNOSTIC recall: of the ground-truth boxes of this class, how many
+    coverage        CLASS-AGNOSTIC recall, and UNGATED -- see the warning below. Of the
+                    ground-truth boxes of this class, how many
                     are hit at the IoU threshold by ANY detection, whatever it was labelled.
 
 Coverage is the number that retires the tag map. A prompt-free backend answers from its own
@@ -174,7 +175,18 @@ def read_detections(path, frame_ids, nms: float = 0.0):
 
 
 def coverage_recall(all_dets, gt, cls, thr) -> float:
-    """Fraction of ground-truth boxes of `cls` hit by ANY detection, ignoring its label."""
+    """Fraction of ground-truth boxes of `cls` hit by ANY detection, ignoring its label.
+
+    WARNING -- `thr` is the IoU threshold, NOT a confidence one, and no confidence gate is
+    applied anywhere in this function. Coverage is therefore reported at whatever floor the run
+    file happens to have been written at (0.05 for the transformer backends, 0.005 for the
+    ultralytics ones), which is not a config anybody can run. The headline figures this produces
+    -- gdino 0.61, yoloe26 0.25 -- become 0.33 and 0.20 at the thresholds that actually ship.
+
+    This is left as it is because every experiment README quotes it and it is a fair
+    model-vs-model comparison at matched (near-zero) gates. For "what does this config file
+    deliver", use eval/box_gt/score_config.py, which scores a run at its own operating point.
+    """
     hit = total = 0
     for frame_id, truth in gt.get(cls, {}).items():
         rows = all_dets.get(frame_id, [])

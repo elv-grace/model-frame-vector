@@ -39,6 +39,7 @@ class Siglip2CropEmbedder:
         device: Optional[torch.device] = None,
     ) -> None:
         self.model_id = model_id
+        self.revision = revision
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         if dtype is None:

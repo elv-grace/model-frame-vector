@@ -1,5 +1,16 @@
-"""Crop-and-embed entity tagger: detect, crop, embed with SigLIP 2, one vector tag per detection.
-Tags stay per-frame with their box intact so bbox video-editor overlay works.
+"""SigLIP 2 frame-vector tagger, with an optional detection phase.
+
+Two modes, one embedder, and `detect_target` is the switch
+----------------------------------------------------------
+Unset (the default), this is a plain frame embedder: one whole-frame SigLIP 2 vector per sampled
+frame, no detector weights loaded at all.
+
+Set, the detection phase runs first and only the detected crops are embedded -- one vector tag
+per detection, each keeping its box so the video-editor overlay works.
+
+Never both in one run. A frame vector and a crop vector are not comparable: NaFlex DOWNsamples a
+1080p frame to the patch budget and UPsamples a 40px crop to it, so the two land in measurably
+different regions of the space (see `min_crop_pixels` in config.py). One run is one vector space.
 
 Two detectors, one embedder
 ---------------------------
@@ -17,6 +28,14 @@ frame pipeline's business rather than this module's.
 Both detectors' crops are embedded in ONE batch. That matters: the embedder is the larger cost at
 low detection counts, and batching across detectors keeps it near its throughput rather than its
 latency.
+
+An optional third channel: the words on the screen
+--------------------------------------------------
+With `ocr` set, one OCR pass runs per frame and its strings are stamped on the detections whose
+boxes contain them, so a brand with a legible wordmark can be found by exact string match rather
+than by a text-to-image cosine that has almost no headroom. Under `ocr: "propose"` the text
+regions the detector did not box also become detections of their own. Off by default -- it is a
+fixed ~400 ms per frame whose value is strongly content-dependent. See general_detection/ocr.py.
 """
 from __future__ import annotations
 
@@ -38,14 +57,22 @@ from general_detection.detector import (
     build_person_detector,
 )
 from general_detection.embedder import Siglip2CropEmbedder
+from general_detection.ocr import TextReader, proposals, texts_for
 from general_detection.prompts import expand_target, split_by_detector
 
-# Used for the optional whole-frame vector: anchored to the full image in normalized coords.
+# The frame vector's box: the full image in normalized coords.
 _WHOLE_FRAME_BOX = {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0}
 
+QUERY_MODES = ["text", "image"]
 
-class EntityDetector(FrameModel):
-    """Detects the configured targets and emits one SigLIP 2 embedding per detection."""
+# Accepted values for `ocr`. "text" annotates existing detections; "propose" also turns
+# un-boxed text regions into detections of their own. See general_detection/ocr.py.
+OCR_MODES = {"off", "text", "propose"}
+
+
+class FrameVectorModel(FrameModel):
+    """One SigLIP 2 vector per sampled frame, or -- with `detect_target` set -- one per
+    detected crop."""
 
     def __init__(
         self,
@@ -64,6 +91,11 @@ class EntityDetector(FrameModel):
         self._brand = None
         self._person = None
         self._brand_mode: Optional[str] = None
+        self._reader: Optional[TextReader] = None
+        # Which parent term OCR proposals are labelled with, set by _apply_targets alongside the
+        # brand detector: a text region is a mark, so it belongs to whatever parent the
+        # open-vocabulary side is serving.
+        self._ocr_label: Optional[str] = None
         self._apply_targets(cfg)
         # Same device as the detectors. Without threading it through, an explicit device (say
         # "cuda:1") would place the detectors there and the embedder on cuda:0, which works but
@@ -78,8 +110,8 @@ class EntityDetector(FrameModel):
     # ---- configuration ----------------------------------------------------------
 
     def _resolve_prompts(self, cfg: RuntimeConfig) -> Dict[str, List[str]]:
-        """`detect_target` wins when set; otherwise `class_prompts` (whose default is the
-        brand+person schema)."""
+        """`detect_target` wins when set, else explicit `class_prompts`. Empty means no
+        detection: the frame-vector mode."""
         if cfg.detect_target:
             return expand_target(cfg.detect_target)
         return {k: list(v) for k, v in cfg.class_prompts.items()}
@@ -88,11 +120,23 @@ class EntityDetector(FrameModel):
         """Build/refresh only the detectors the current target actually needs.
 
         Loading is lazy and per-role, so a target that routes to one side never constructs the
-        other. Rebuilding is confined to a real backend change (`brand_detector` switching
-        between "fast" and "coverage"); a prompt-only change re-encodes text, which is seconds,
-        rather than reloading weights.
+        other and no target at all constructs neither. Rebuilding is confined to a real backend
+        change (`brand_detector` switching between "fast" and "coverage"); a prompt-only change
+        re-encodes text, which is seconds, rather than reloading weights.
         """
+        # Validated first, before anything loads weights: a typo in --params should fail in
+        # milliseconds rather than after Grounding DINO is on the GPU.
+        if cfg.ocr not in OCR_MODES:
+            raise ValueError(f"ocr must be one of {sorted(OCR_MODES)}, got {cfg.ocr!r}")
+
         open_vocab, closed = split_by_detector(self._resolve_prompts(cfg))
+
+        # Rejected rather than silently ignored: with no detections there is nothing to stamp a
+        # string onto, so an `ocr` run without a target would quietly pay nothing and find nothing.
+        if cfg.ocr != "off" and not (open_vocab or closed):
+            raise ValueError(
+                f"ocr={cfg.ocr!r} needs detections to attach text to; pass detect_target"
+            )
 
         if open_vocab:
             if self._brand is None or self._brand_mode != cfg.brand_detector:
@@ -100,10 +144,20 @@ class EntityDetector(FrameModel):
                                                    self.device)
                 self._brand_mode = cfg.brand_detector
             self._brand.set_prompts(open_vocab)
+            self._ocr_label = sorted(open_vocab)[0]
         else:
             # Released rather than kept idle: these are the large weights, and a caller that
             # narrowed its target to person should get the memory back.
-            self._brand, self._brand_mode = None, None
+            self._brand, self._brand_mode, self._ocr_label = None, None, None
+
+        # Same lazy, per-role treatment as the detectors: `ocr` off never constructs the reader,
+        # and turning it off releases it. It is not rebuilt for a mode change between "text" and
+        # "propose", which share one pass.
+        if cfg.ocr != "off":
+            if self._reader is None:
+                self._reader = TextReader(self.cache_dir, self.device)
+        else:
+            self._reader = None
 
         if closed:
             if self._person is None:
@@ -112,11 +166,14 @@ class EntityDetector(FrameModel):
         else:
             self._person = None
 
-        logger.info(
-            f"targets: open-vocab={sorted(open_vocab) or '-'} "
-            f"({cfg.brand_detector if open_vocab else 'not loaded'}), "
-            f"closed={sorted(closed) or '-'}"
-        )
+        if not (open_vocab or closed):
+            logger.info("no detect_target: one whole-frame vector per frame, no detectors loaded")
+        else:
+            logger.info(
+                f"targets: open-vocab={sorted(open_vocab) or '-'} "
+                f"({cfg.brand_detector if open_vocab else 'not loaded'}), "
+                f"closed={sorted(closed) or '-'}, ocr={cfg.ocr}"
+            )
 
     def set_config(self, config: dict) -> None:
         self.config = from_dict(RuntimeConfig, config)
@@ -128,15 +185,24 @@ class EntityDetector(FrameModel):
     # ---- tagging ----------------------------------------------------------------
 
     def tag_frame(self, img: np.ndarray) -> List[FrameTag]:
-        """img: (H, W, 3) uint8 RGB. One FrameTag per detection: `tag` is the parent term,
-        `vector` the crop embedding, `box` the normalized un-padded detection box. The box is
-        repeated in `additional_info` because that is the only field a vectorstore search row
-        carries back -- `box` itself lands in `frame_info`, which the index does not store.
+        """img: (H, W, 3) uint8 RGB. Returns the frame's vector tag, or one tag per detection
+        when a target is set.
+
+        Detection mode: `tag` is the parent term, `vector` the crop embedding, `box` the
+        normalized un-padded detection box. The box is repeated in `additional_info` because
+        that is the only field a vectorstore search row carries back -- `box` itself lands in
+        `frame_info`, which the index does not store.
 
         With `output_tags` set, each detection emits a SECOND FrameTag right after its vector
         tag -- same label, same box, no vector -- for visual aid.
-        The optional whole-frame vector does not need a second tag."""
+
+        With `ocr` set, a detection containing legible text also carries `additional_info.text`.
+        The field is ABSENT rather than empty when nothing was read, so it costs nothing on the
+        tags that have no text -- which means absence does not distinguish "OCR was off" from
+        "no text in this box". The run's params record which."""
         cfg = self.config
+        if self._brand is None and self._person is None:
+            return [self._frame_tag(img)]
 
         detections: List[Detection] = []
         for detector in (self._person, self._brand):
@@ -145,9 +211,13 @@ class EntityDetector(FrameModel):
             if detector is not None:
                 detections.extend(detector.detect(img, cfg))
 
+        # One OCR pass per frame, after detection because "propose" needs the boxes to suppress
+        # against. Its cost does not depend on how many were found.
+        regions = self._reader.read(img, cfg) if self._reader is not None else []
+        if regions and cfg.ocr == "propose" and self._ocr_label:
+            detections.extend(proposals(regions, detections, img, cfg, self._ocr_label))
+
         crops = [d.crop for d in detections]
-        if cfg.embed_whole_frame:
-            crops.append(np.ascontiguousarray(img))
         if not crops:
             return []
 
@@ -156,7 +226,6 @@ class EntityDetector(FrameModel):
         tags: List[FrameTag] = []
         for i, detection in enumerate(detections):
             info = {
-                "kind": "crop",
                 "prompt": detection.prompt,
                 "score": detection.score,
                 # dict(...) so this copy and the tag's own box cannot alias.
@@ -169,6 +238,12 @@ class EntityDetector(FrameModel):
                 # constant per run, so it is recorded per tag rather than per config.
                 "detector": detection.detector,
             }
+            if regions:
+                # Only when something was read: an empty list on every tag would be noise in
+                # every search row, and absence already says "no legible text in this box".
+                text = texts_for(detection.box, regions, cfg)
+                if text:
+                    info["text"] = text
             tags.append(
                 FrameTag(
                     tag=detection.label,
@@ -190,29 +265,36 @@ class EntityDetector(FrameModel):
                     )
                 )
 
-        if cfg.embed_whole_frame:
-            tags.append(
-                FrameTag(
-                    tag="",  # no class: this is the frame itself, not a detected entity
-                    vector=vectors[-1].tolist(),
-                    # dict(...) so the tag owns its box and the module constant is never mutated
-                    box=dict(_WHOLE_FRAME_BOX),
-                    additional_info={
-                        "kind": "frame",
-                        "box": dict(_WHOLE_FRAME_BOX),
-                        "upscale": upscales[-1],
-                        **self._embedder_info(),
-                    },
-                )
-            )
-
         return tags
+
+    def _frame_tag(self, img: np.ndarray) -> FrameTag:
+        """The no-detection output: one whole-frame vector, empty label, full-frame box.
+
+        Same embedder and same knobs (`max_num_patches`, `normalize`) as a crop takes, so the
+        only difference is what is handed to it -- here NaFlex downsamples a 1080p frame to the
+        patch budget rather than upsampling a crop to it.
+        """
+        vectors, upscales = self.embedder.embed([np.ascontiguousarray(img)], self.config)
+        return FrameTag(
+            tag="",  # no class: this is the frame itself, not a detected entity
+            vector=vectors[0].tolist(),
+            # dict(...) so the tag owns its box and the module constant is never mutated
+            box=dict(_WHOLE_FRAME_BOX),
+            additional_info={
+                "box": dict(_WHOLE_FRAME_BOX),
+                "upscale": upscales[0],
+                **self._embedder_info(),
+            },
+        )
 
     def _embedder_info(self) -> Dict:
         """Provenance stamped on every tag so the index can validate what it is storing and
         so a checkpoint or budget change is visible after the fact rather than silent."""
         return {
             "embedder": self.embedder.model_id,
+            "revision": self.embedder.revision,
             "dim": self.embedder.dim,
+            "normalize": self.config.normalize,
             "max_num_patches": self.config.max_num_patches,
+            "query_modes": list(QUERY_MODES),
         }

@@ -4,12 +4,20 @@ The schema
 ----------
 Two classes, measured into their current form against box-level ground truth (see eval/):
 
-    brand   six MARK terms, and deliberately no object terms. `brand` means the mark itself --
-            the GAP wordmark, not the hoodie; the NFL shield, not the helmet. Asked for
-            `sportswear` a detector returns the garment; asked for `logo` it returns the
-            wordmark on it, and the wordmark is the crop that retrieves against a logo pool.
-            With 101 concrete object nouns only 1% of brand detections carried a mark-like
-            label (63% were `shoe`); with these six, 100% do.
+    brand   four MARK terms, and deliberately no object terms. `brand` means the mark itself --
+            the GAP wordmark, not the hoodie; the NFL shield, not the helmet.
+
+            It was six terms until `emblem` and `label` were measured for MARGINAL coverage --
+            coverage of all six, minus coverage without that one term -- against box ground
+            truth (eval/experiments/10_config_ab):
+
+                prompt          gdino @0.15   gdino @0.07   yoloe @0.007
+                logo               +0.042        +0.167        +0.177
+                letter logo        +0.068        +0.068        +0.000
+                brand              +0.062        +0.052        +0.005
+                car logo           +0.005        +0.005        +0.000
+                emblem             +0.000        +0.000        +0.000
+                label              +0.000        +0.000        +0.016
 
     person  one word. `person` alone reaches 0.92-0.97 class-agnostic coverage on every
             promptable backend -- identical to a 101-term list including 18 role words
@@ -38,7 +46,8 @@ from __future__ import annotations
 from typing import Dict, List, Tuple
 
 # The mark terms. Order is stable because it fixes class ids for a given config.
-BRAND_PROMPTS: List[str] = ["logo", "letter logo", "car logo", "emblem", "brand", "label"]
+# BRAND_PROMPTS = ["logo", "letter logo", "car logo", "emblem", "brand", "label"]  # was: six
+BRAND_PROMPTS: List[str] = ["logo", "letter logo", "brand", "car logo"]
 PERSON_PROMPTS: List[str] = ["person"]
 
 DEFAULT_CLASS_PROMPTS: Dict[str, List[str]] = {
@@ -57,7 +66,7 @@ CLOSED_VOCAB_LABEL: Dict[str, str] = {"person": "person"}
 def expand_target(target: List[str]) -> Dict[str, List[str]]:
     """Turn a caller's target list into the {parent: [phrasings]} form the detectors take.
 
-    A term naming a known parent expands to that parent's phrasings, so `brand` becomes the six
+    A term naming a known parent expands to that parent's phrasings, so `brand` becomes the four
     mark terms rather than the literal word -- which matters, because the bare word `brand` is a
     far weaker prompt than the mark list and only Grounding DINO grounds it at all. Any other
     term becomes its own parent with itself as the single phrasing.
