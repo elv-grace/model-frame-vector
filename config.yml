@@ -4,27 +4,21 @@ device: cuda
 
 model:
   # Detector weights are NOT listed here, and none load unless a request sets `detect_target`.
-  # Which one then loads depends on the request: `detect_target` routes terms to a backend and
-  # `brand_detector` picks between the two open-vocabulary options. The checkpoints and their
-  # measured input sizes and thresholds live in general_detection/detector.py (BRAND_BACKENDS,
-  # PERSON_BACKEND) so that a weight, its resolution and its threshold stay together -- they
-  # were measured together and are not independently valid.
+  # Which one then loads is `detector`'s choice between the two open-vocabulary backends. The
+  # checkpoints and their measured input sizes and thresholds live in
+  # general_detection/detector.py (DETECTORS) so that a weight, its resolution and its threshold
+  # stay together -- they were measured together and are not independently valid.
   #
-  #   brand, "coverage" (default)  grounding-dino-base   @800,  conf 0.07
-  #   brand, "fast"                yoloe-26l-seg.pt      @1280, conf 0.007
-  #   person                       yolo11l.pt            @640,  conf 0.11
+  #   "coverage" (default)  IDEA-Research/grounding-dino-base  @800,  conf 0.07
+  #   "fast"                yoloe-26l-seg.pt                   @1280, conf 0.007
   #
-  # All are downloaded on first load into storage.cache_path (ultralytics) or the HF cache.
-  #
-  # A fourth model loads only when the request sets `ocr`: easyocr's CRAFT text detector and
-  # CRNN recogniser, into storage.cache_path/easyocr. Off by default -- see the OCR section of
-  # the README and general_detection/ocr.py.
+  # Both download on first load into storage.cache_path (ultralytics) or the HF cache.
 
   embedder:
     # SigLIP 2 NaFlex image tower, pulled from the HuggingFace hub on first load into the
-    # container's HF cache (HF_HOME, see the Containerfile). Embeds whole frames by default and
-    # detected crops when a target is set -- one checkpoint either way, so the two modes stay
-    # in the same 768-d space.
+    # container's HF cache (HF_HOME, see the Containerfile). Embeds the whole frame on every
+    # request and each detected crop when a target is set -- one checkpoint either way, so
+    # frame and crop vectors land in the same 768-d space.
     model_id: google/siglip2-base-patch16-naflex
     # Pinned rather than null so the vectors are reproducible and byte-comparable with what
     # model-siglip2-frame-vector already indexed at this commit. Threaded into from_pretrained
@@ -32,11 +26,11 @@ model:
     revision: b53b807d3a2d5e2b3911292f2d69e5341cdc064c
 
 storage:
-  # Persistent cache for the YOLOE checkpoint, the MobileCLIP text encoder that get_text_pe()
-  # downloads, and easyocr's weights. Must be a mounted volume or they are re-fetched every run.
+  # Persistent cache for the YOLOE checkpoint and the MobileCLIP text encoder that
+  # get_text_pe() downloads. Must be a mounted volume or they are re-fetched every run.
   cache_path: /root/.cache/detection
 
-# Runtime tunables (the `detect_target` mode switch, thresholds, crop and embedding knobs) live
-# in general_detection/config.py's RuntimeConfig and are injected per-request via `--params`; see
-# the README's "Runtime parameters" table. Frame sampling rate (fps) is handled generically by
-# the tagger runtime.
+# The four runtime tunables (detect_target, detector, max_detections, output_tags) live in
+# general_detection/config.py's RuntimeConfig and are injected per-request via `--params`; see
+# the README. Everything else is a fixed constant next to the code that consumes it. Frame
+# sampling rate (fps) is handled generically by the tagger runtime.

@@ -1,6 +1,14 @@
 # eval/
 
-Detector evaluation for the brand / person tagger.
+Detector evaluation for the frame / crop vector tagger.
+
+> **The `run*.sh` scripts under `experiments/` are records, not reproducers.** They pass
+> `--params` that the tagger no longer accepts — `brand_detector` (now `detector`),
+> `class_prompts`, `brand_conf`, `brand_imgsz`, `brand_tiles`, and the `ocr` family — because
+> those knobs became fixed constants or were removed after these runs. Each experiment's
+> `params.json` and `run.log` are the record of what was actually measured; the numbers they
+> produced are what set the shipped defaults. `tools/verify_embedder_wiring.py` is the one
+> script here kept current against the container.
 
 ```
 frameset/      the 100 frozen frames, the manifest, the presence labels

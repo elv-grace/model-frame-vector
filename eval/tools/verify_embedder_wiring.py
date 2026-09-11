@@ -37,12 +37,15 @@ ROOT = os.environ.get("MD_ROOT",
                           os.path.abspath(__file__)))))
 sys.path.insert(0, ROOT)
 
-from general_detection.config import RuntimeConfig       # noqa: E402
-from general_detection.detector import BaseDetector      # noqa: E402
-from general_detection.embedder import Siglip2CropEmbedder  # noqa: E402
+from general_detection.detector import (                 # noqa: E402
+    CROP_PADDING, MIN_CROP_PIXELS, BaseDetector,
+)
+from general_detection.embedder import (                 # noqa: E402
+    MAX_NUM_PATCHES, Siglip2CropEmbedder,
+)
 
 
-def production_crops(cfg, limit):
+def production_crops(limit):
     """Ground-truth boxes cropped through the production path -- BaseDetector._crop, gated by
     the shipped min_crop_pixels, padded by the shipped crop_padding."""
     frameset = os.path.join(ROOT, "eval", "frameset")
@@ -62,9 +65,9 @@ def production_crops(cfg, limit):
                 continue
             x1, y1 = box["x1"] * width, box["y1"] * height
             x2, y2 = box["x2"] * width, box["y2"] * height
-            if min(x2 - x1, y2 - y1) < cfg.min_crop_pixels:
+            if min(x2 - x1, y2 - y1) < MIN_CROP_PIXELS:
                 continue
-            crop = BaseDetector._crop(image, x1, y1, x2, y2, cfg.crop_padding)
+            crop = BaseDetector._crop(image, x1, y1, x2, y2, CROP_PADDING)
             if crop is not None:
                 out.append((crop, (x1, y1, x2, y2), (height, width)))
         if len(out) >= limit:
@@ -88,46 +91,45 @@ def main() -> int:
                         help="max cosine deviation allowed between the two fp32 paths")
     args = parser.parse_args()
 
-    cfg = RuntimeConfig()
     settings = yaml.safe_load(open(os.path.join(ROOT, "config.yml")))["model"]["embedder"]
     model_id, revision = settings["model_id"], settings.get("revision")
     print(f"config.yml embedder : {model_id}  revision={revision}")
-    print(f"crop_padding {cfg.crop_padding}   min_crop_pixels {cfg.min_crop_pixels}   "
-          f"max_num_patches {cfg.max_num_patches}\n")
+    print(f"crop_padding {CROP_PADDING}   min_crop_pixels {MIN_CROP_PIXELS}   "
+          f"max_num_patches {MAX_NUM_PATCHES}\n")
 
     failures = []
 
     # ---- crop geometry -------------------------------------------------------------------
-    picked = production_crops(cfg, args.limit)
+    picked = production_crops(args.limit)
     print(f"{len(picked)} production crops\n")
     print(f"{'un-padded box':>18}{'crop':>14}{'expected':>14}{'ratio':>8}")
     print("-" * 54)
     bad_geometry = 0
     for crop, (x1, y1, x2, y2), (height, width) in picked:
         box_w, box_h = x2 - x1, y2 - y1
-        expected_w = (min(width, round(x2 + box_w * cfg.crop_padding))
-                      - max(0, round(x1 - box_w * cfg.crop_padding)))
-        expected_h = (min(height, round(y2 + box_h * cfg.crop_padding))
-                      - max(0, round(y1 - box_h * cfg.crop_padding)))
+        expected_w = (min(width, round(x2 + box_w * CROP_PADDING))
+                      - max(0, round(x1 - box_w * CROP_PADDING)))
+        expected_h = (min(height, round(y2 + box_h * CROP_PADDING))
+                      - max(0, round(y1 - box_h * CROP_PADDING)))
         if crop.shape[1] != expected_w or crop.shape[0] != expected_h:
             bad_geometry += 1
     for crop, (x1, y1, x2, y2), _ in picked[:4]:
         box_w, box_h = x2 - x1, y2 - y1
         print(f"{f'{box_w:.1f}x{box_h:.1f}':>18}"
               f"{f'{crop.shape[1]}x{crop.shape[0]}':>14}"
-              f"{f'{1 + 2 * cfg.crop_padding:.2f}x':>14}{crop.shape[1] / box_w:>8.3f}")
+              f"{f'{1 + 2 * CROP_PADDING:.2f}x':>14}{crop.shape[1] / box_w:>8.3f}")
     if bad_geometry:
         failures.append(f"{bad_geometry} crops do not match the crop_padding arithmetic")
     print(f"\ncrop == padded box on all {len(picked)} crops: "
           f"{'FAIL' if bad_geometry else 'ok'}   "
-          f"(ratio is under {1 + 2 * cfg.crop_padding:.2f} only where a box is clipped at a "
+          f"(ratio is under {1 + 2 * CROP_PADDING:.2f} only where a box is clipped at a "
           f"frame edge)\n")
 
     crops = [c for c, _, _ in picked]
 
     # ---- the vision tower against the benchmark's own call -------------------------------
     embedder = Siglip2CropEmbedder(model_id, revision=revision, dtype=torch.float32)
-    vec_fp32, upscales = embedder.embed(crops, cfg)
+    vec_fp32, upscales = embedder.embed(crops)
     device = embedder.device
     del embedder
     torch.cuda.empty_cache()
@@ -140,7 +142,7 @@ def main() -> int:
     for i in range(0, len(crops), 32):
         with torch.no_grad():
             inputs = processor(images=[Image.fromarray(c) for c in crops[i:i + 32]],
-                               return_tensors="pt", max_num_patches=cfg.max_num_patches)
+                               return_tensors="pt", max_num_patches=MAX_NUM_PATCHES)
             feats = reference.get_image_features(
                 **{k: v.to(device) for k, v in inputs.items()})
         feats = getattr(feats, "pooler_output", feats)
@@ -159,7 +161,7 @@ def main() -> int:
 
     # ---- the shipped dtype ---------------------------------------------------------------
     embedder = Siglip2CropEmbedder(model_id, revision=revision)
-    vec_shipped, _ = embedder.embed(crops, cfg)
+    vec_shipped, _ = embedder.embed(crops)
     dtype = embedder.dtype
     del embedder
     torch.cuda.empty_cache()

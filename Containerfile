@@ -39,12 +39,10 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 # No weights are baked into this image. Downloads happen on first load, and only for what the
 # request actually needs:
 #   - SigLIP 2 from the HuggingFace hub, into HF_HOME. Always, it is the embedder.
-#   - the detector checkpoints (YOLOE/Grounding DINO/YOLO11) and the MobileCLIP text encoder
-#     that get_text_pe() needs, into storage.cache_path (config.yml), and ONLY when a request
-#     sets `detect_target`; ultralytics resolves those relative to the CWD, which
+#   - the detector checkpoint (Grounding DINO or YOLOE) and, for YOLOE, the MobileCLIP text
+#     encoder that get_text_pe() needs, into storage.cache_path (config.yml), and ONLY when a
+#     request sets `detect_target`; ultralytics resolves those relative to the CWD, which
 #     general_detection/detector.py handles by chdir-ing into the cache during load.
-#   - easyocr's CRAFT + CRNN weights, into storage.cache_path/easyocr, and ONLY when a request
-#     sets `ocr` -- the reader is constructed lazily, so a run with OCR off never fetches them.
 # All live under /root/.cache, so ONE mounted volume there covers them. Without it they
 # land in the container's ephemeral writable layer and are re-fetched on every run.
 # Kept below the pip install: editing these then costs only the source COPYs, not a reinstall.

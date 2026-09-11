@@ -1,11 +1,12 @@
-"""Routing tests: which detector serves which target, and what never loads."""
+"""How a `detect_target` term becomes detector prompts. One backend serves every target."""
 import pytest
+
 from general_detection.prompts import (
-    BRAND_PROMPTS, DEFAULT_CLASS_PROMPTS, expand_target, split_by_detector,
+    BRAND_PROMPTS, DEFAULT_CLASS_PROMPTS, PERSON_PROMPTS, expand_target,
 )
 
 
-def test_default_target_expands_brand_to_the_mark_terms():
+def test_brand_expands_to_the_mark_terms():
     """`brand` must expand, not pass through literally.
 
     The bare word is a far weaker prompt than the mark list -- only Grounding DINO grounds it
@@ -16,8 +17,16 @@ def test_default_target_expands_brand_to_the_mark_terms():
     assert expand_target(["brand", "person"]) == DEFAULT_CLASS_PROMPTS
 
 
+def test_person_is_its_own_phrasing():
+    """`person` alone matches a 101-term list including 18 role words, so there is nothing to
+    expand it into. It now goes to the open-vocabulary backend like everything else."""
+    assert expand_target(["person"]) == {"person": PERSON_PROMPTS}
+    assert PERSON_PROMPTS == ["person"]
+
+
 def test_unknown_target_becomes_its_own_parent():
     assert expand_target(["car"]) == {"car": ["car"]}
+    assert expand_target(["person", "car"]) == {"person": ["person"], "car": ["car"]}
 
 
 def test_blank_terms_are_dropped_and_an_empty_target_is_an_error():
@@ -26,23 +35,11 @@ def test_blank_terms_are_dropped_and_an_empty_target_is_an_error():
         expand_target(["", "   "])
 
 
-@pytest.mark.parametrize("target,open_vocab,closed", [
-    (["brand", "person"], ["brand"], ["person"]),
-    (["person"],          [],        ["person"]),
-    (["car"],             ["car"],   []),
-    (["person", "car"],   ["car"],   ["person"]),
-])
-def test_targets_route_to_the_right_detectors(target, open_vocab, closed):
-    o, c = split_by_detector(expand_target(target))
-    assert sorted(o) == open_vocab
-    assert sorted(c) == closed
+def test_there_is_no_per_term_routing_any_more():
+    """`split_by_detector` partitioned targets between an open-vocab and a closed COCO backend.
+    The closed one (YOLO11) is retired, so every term goes to the same detector."""
+    import general_detection.prompts as prompts
 
-
-def test_a_person_only_target_leaves_the_open_vocab_side_empty():
-    """The caller is expected to skip an empty side rather than run it on nothing.
-
-    This is the largest available saving for the common case: a person-only request should
-    never construct the brand model, which is the large weight.
-    """
-    o, _ = split_by_detector(expand_target(["person"]))
-    assert not o
+    assert not hasattr(prompts, "split_by_detector")
+    assert not hasattr(prompts, "CLOSED_VOCAB_PARENTS")
+    assert not hasattr(prompts, "CLOSED_VOCAB_LABEL")

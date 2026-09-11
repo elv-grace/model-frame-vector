@@ -15,11 +15,11 @@ if __name__ == '__main__':
     params = get_params()
     params = from_dict(RuntimeConfig, data=params)
 
-    # One whole-frame vector tag per sampled frame, or -- when the request sets `detect_target` --
-    # one per detected crop, plus a vector-less twin of each when it also sets `output_tags`.
-    # Detector weights are not passed here. Which detectors run (if any) depends on the request's
-    # `detect_target` and `brand_detector`, so the model resolves and lazily loads them itself
-    # from the measured defaults in general_detection/detector.py.
+    # One whole-frame vector tag per sampled frame, plus -- when the request sets `detect_target`
+    # -- one per detected crop, and a vector-less twin of each when it also sets `output_tags`.
+    # Detector weights are not passed here. Whether a detector runs at all, and which one,
+    # depends on the request's `detect_target` and `detector`, so the model resolves and lazily
+    # loads it itself from the measured defaults in general_detection/detector.py.
     model = FrameVectorModel(
         cfg=params,
         embedder_model_id=config["model"]["embedder"]["model_id"],
