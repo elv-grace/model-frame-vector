@@ -224,7 +224,7 @@ pytest tests/                 # detector and embedder stubbed: no weights, no GP
 (needs `test-files/1.mp4` and a GPU). For container smoke tests:
 
 ```bash
-make test                                                                                  # frame vectors only
+make test               # frame vectors only
 IMAGE_NAME=model-frame-vector ./buildscripts/testers/test-model.sh --params '{"detect_target": ["brand", "person"]}'
 IMAGE_NAME=model-frame-vector ./buildscripts/testers/test-model.sh --params '{"detect_target": ["brand"], "detector": "fast"}'
 IMAGE_NAME=model-frame-vector ./buildscripts/testers/test-model.sh --params '{"detect_target": ["person"], "output_tags": true}'

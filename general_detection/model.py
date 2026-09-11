@@ -40,7 +40,9 @@ from common_ml.tagging.models.frame_based import FrameModel
 from common_ml.tagging.models.tag_types import FrameTag
 
 from general_detection.config import RuntimeConfig
-from general_detection.detector import CROP_PADDING, Detection, build_detector
+from general_detection.detector import (
+    CROP_PADDING, Detection, build_detector, check_detector,
+)
 from general_detection.embedder import MAX_NUM_PATCHES, NORMALIZE, Siglip2CropEmbedder
 from general_detection.prompts import expand_target
 
@@ -91,6 +93,11 @@ class FrameVectorModel(FrameModel):
         (`detector` switching between "fast" and "coverage"); a target-only change re-encodes
         text, which is seconds, rather than reloading weights.
         """
+        # Validated before the early return below, so a typo fails in milliseconds rather than
+        # being accepted on a run that happens not to build a detector and only surfacing later,
+        # when the same params are reused with a `detect_target`.
+        check_detector(cfg.detector)
+
         if not cfg.detect_target:
             self._detector, self._detector_mode = None, None
             logger.info("no detect_target: one whole-frame vector per frame, no detector loaded")

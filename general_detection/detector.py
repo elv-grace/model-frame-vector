@@ -425,10 +425,21 @@ class GroundingDinoDetector(BaseDetector):
         )
 
 
+def check_detector(mode: str) -> None:
+    """Reject an unknown backend name.
+
+    Split out of `build_detector` so the name can be validated on the path where no detector is
+    built at all -- otherwise a typo in `detector` sits silently in a params blob until someone
+    adds a `detect_target`, and only then fails.
+    """
+    if mode not in DETECTORS:
+        raise ValueError(f"detector must be one of {sorted(DETECTORS)}, got {mode!r} "
+                         f"(it only takes effect when detect_target is set)")
+
+
 def build_detector(mode: str, cache_dir: str, device: Optional[str] = None) -> BaseDetector:
     """Construct the open-vocabulary detector named by `mode` ("fast" or "coverage")."""
-    if mode not in DETECTORS:
-        raise ValueError(f"detector must be one of {sorted(DETECTORS)}, got {mode!r}")
+    check_detector(mode)
     spec = DETECTORS[mode]
     if spec["kind"] == "yoloe":
         return YoloeDetector(spec["weights"], cache_dir, spec["imgsz"], spec["conf"], device)

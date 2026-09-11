@@ -273,7 +273,29 @@ def test_retired_params_are_gone(gone):
 def test_detector_defaults_to_coverage_and_rejects_an_unknown_name():
     assert RuntimeConfig().detector == "coverage"
     with pytest.raises(ValueError, match="detector must be one of"):
-        build_detector("yolo11", "/tmp")
+        build_detector("yolo11l", "/tmp")
+
+
+@pytest.mark.parametrize("target", [None, ["brand"]])
+def test_an_unknown_detector_is_rejected_even_when_no_detector_is_built(monkeypatch, target):
+    """`detector` is ignored with no `detect_target`, but a typo in it must not be. Without
+    this the bad name is accepted on a frame-only run and only fails later, when the same
+    params are reused with a target."""
+    monkeypatch.setattr(
+        "general_detection.model.Siglip2CropEmbedder",
+        lambda *args, **kwargs: _FakeEmbedder(),
+    )
+    monkeypatch.setattr(
+        "general_detection.model.build_detector",
+        lambda *args, **kwargs: _FakeDetector(),
+    )
+
+    with pytest.raises(ValueError, match="detector must be one of"):
+        FrameVectorModel(
+            cfg=RuntimeConfig(detect_target=target, detector="yolo11l"),
+            embedder_model_id="fake/siglip2",
+            cache_dir="/tmp",
+        )
 
 
 def test_shipped_backend_thresholds_are_reachable():
